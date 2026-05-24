@@ -53,48 +53,11 @@
   z-index: 800;
   animation: fadeIn 0.3s ease-out;
 }
-
-@media (max-width: 900px) {
-  .app-container {
-    grid-template-columns: 1fr;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .mobile-top-bar {
-    display: flex;
-  }
-
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: -260px; /* Hidden by default offscreen */
-    width: 260px;
-    height: 100vh;
-    z-index: 900;
-    transition: left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    display: flex !important; /* Force flex override */
-    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
-  }
-
-  .sidebar.mobile-open {
-    left: 0; /* Slide in */
-  }
-  
-  .mobile-only {
-    display: block !important;
-  }
-  
-  .main-panel {
-    padding: 20px;
-    height: calc(100vh - 60px);
-  }
-  
-  .top-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
+.dashboard-chart-grid {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 30px;
+  margin-bottom: 20px;
 }
 
 /* Sidebar Navigation */
@@ -768,3 +731,65 @@
   font-weight: 600;
   color: var(--secondary);
 }
+
+@media (max-width: 900px) {
+  .app-container {
+    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .mobile-top-bar {
+    display: flex;
+  }
+
+  .sidebar {
+    position: fixed !important;
+    top: 0;
+    left: -260px !important; /* Hidden by default offscreen */
+    width: 260px;
+    height: 100vh;
+    z-index: 900;
+    transition: left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex !important; /* Force flex override */
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .sidebar.mobile-open {
+    left: 0 !important; /* Slide in */
+  }
+  
+  .mobile-only {
+    display: block !important;
+  }
+  
+  .main-panel {
+    padding: 20px;
+    height: calc(100vh - 60px);
+  }
+  
+  .top-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  /* Dashboard responsive grid adjustments */
+  .dashboard-chart-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px;
+  }
+
+  .vertical-chart-wrapper {
+    overflow-x: auto;
+    justify-content: flex-start;
+    gap: 12px;
+    padding-bottom: 15px; /* 스크롤바 공간 */
+  }
+
+  .vertical-chart-bar-col {
+    flex-shrink: 0;
+    width: 45px;
+  }
+}
+

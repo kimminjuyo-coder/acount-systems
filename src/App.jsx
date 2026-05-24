@@ -772,7 +772,7 @@ export default function App() {
               </p>
 
               {/* Flex Grid grouping the vertical chart (left) and the annual summary stats box (right) */}
-              <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '30px', alignItems: 'center' }}>
+              <div className="dashboard-chart-grid" style={{ alignItems: 'center' }}>
                 {/* Left: Vertical Chart */}
                 <div className="vertical-chart-wrapper">
                   {monthlyChartData.map((d, index) => {
