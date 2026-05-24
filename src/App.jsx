@@ -678,15 +678,6 @@ export default function App() {
             </p>
           </div>
           
-          {/* Quick Role Switcher */}
-          <div className="role-switcher-container">
-            <span className="form-label" style={{ margin: 0 }}>역할 전환:</span>
-            <select className="form-select" style={{ padding: '6px 12px', fontSize: '0.85rem' }} value={currentUser.id} onChange={(e) => handleUserChange(e.target.value)}>
-              {users.map(u => (
-                <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
-              ))}
-            </select>
-          </div>
         </header>
 
         {/* Statistics Grid */}
@@ -1198,56 +1189,49 @@ export default function App() {
                           <h3 style={{ margin: 0, fontSize: '1.2rem' }}>{proj.name}</h3>
                         </div>
 
-                        {/* Right: PM Highlight Badge + Progress & Action buttons (Requirement #1: PM name badge adjacent left to progress text) */}
-                        <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginLeft: 'auto' }}>
+                        {/* Right: PM Highlight Badge + Progress & Action buttons */}
+                        <div className="project-meta-actions">
                           
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              {/* PM Badge - only show if NOT a PIC (Requirement #3) */}
+                          <div className="project-meta-info">
+                            <div className="project-progress-wrapper">
+                              {/* PM Badge - only show if NOT a PIC */}
                               {!isPIC && (
-                                <span style={{ 
-                                  padding: '2px 8px', 
-                                  background: 'rgba(110, 68, 255, 0.1)', 
-                                  border: '1px solid rgba(110, 68, 255, 0.25)', 
-                                  borderRadius: '4px', 
-                                  fontSize: '0.75rem', 
-                                  color: 'var(--secondary)', 
-                                  fontWeight: '600' 
-                                }}>
+                                <span className="pm-badge">
                                   {pm ? pm.name : '미지정'} PM
                                 </span>
                               )}
-                              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>진행률: {completedCount}/{proj.totalTasksCount}</span>
+                              <span className="project-progress-text">진행률: {completedCount}/{proj.totalTasksCount}</span>
                             </div>
-                            <div style={{ fontWeight: 'bold', color: 'var(--success)' }}>₩{totalProjCost.toLocaleString()}</div>
+                            <div className="project-cost-text">₩{totalProjCost.toLocaleString()}</div>
                           </div>
                           
-                          {/* Toggle Expand/Collapse */}
-                          <button className="btn btn-outline" style={{ padding: '6px 12px', fontSize: '0.85rem' }} onClick={() => toggleProjectExpand(proj.id)}>
-                            {isExpanded ? '▲ 접기' : '▼ 작업 목록'}
-                          </button>
+                          <div className="project-action-buttons">
+                            {/* Toggle Expand/Collapse */}
+                            <button className="btn btn-outline btn-sm" onClick={() => toggleProjectExpand(proj.id)}>
+                              {isExpanded ? '▲ 접기' : '▼ 작업 목록'}
+                            </button>
 
-                          {/* Completion Toggle Button for PIC only (Requirement #2 revised) */}
-                          {(isPIC && proj.picId === currentUser.id) && (
-                            <button 
-                              className={`btn ${proj.status === 'IN_PROGRESS' ? 'btn-success' : 'btn-outline'}`} 
-                              style={{ padding: '6px 12px', fontSize: '0.85rem' }} 
-                              onClick={() => handleToggleProjectStatus(proj.id)}
-                            >
-                              {proj.status === 'IN_PROGRESS' ? '✓ 완료 처리' : '⏳ 진행으로 변경'}
-                            </button>
-                          )}
+                            {/* Completion Toggle Button for PIC only */}
+                            {(isPIC && proj.picId === currentUser.id) && (
+                              <button 
+                                className={`btn btn-sm ${proj.status === 'IN_PROGRESS' ? 'btn-success' : 'btn-outline'}`} 
+                                onClick={() => handleToggleProjectStatus(proj.id)}
+                              >
+                                {proj.status === 'IN_PROGRESS' ? '✓ 완료' : '⏳ 진행중'}
+                              </button>
+                            )}
 
-                          {(isPIC && proj.picId === currentUser.id) && (
-                            <button className="btn btn-outline" style={{ padding: '6px 12px', fontSize: '0.85rem' }} onClick={() => handleDownloadProjectSummary(proj)}>
-                              📥 엑셀
-                            </button>
-                          )}
-                          {isAdmin && (
-                            <button className="btn btn-danger" style={{ padding: '6px 12px', fontSize: '0.85rem' }} onClick={() => handleDeleteProject(proj.id)}>
-                              삭제
-                            </button>
-                          )}
+                            {(isPIC && proj.picId === currentUser.id) && (
+                              <button className="btn btn-outline btn-sm" onClick={() => handleDownloadProjectSummary(proj)}>
+                                📥 엑셀
+                              </button>
+                            )}
+                            {isAdmin && (
+                              <button className="btn btn-danger btn-sm" onClick={() => handleDeleteProject(proj.id)}>
+                                삭제
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
 

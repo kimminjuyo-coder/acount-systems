@@ -60,6 +60,58 @@
   margin-bottom: 20px;
 }
 
+.pm-badge {
+  padding: 2px 8px;
+  background: rgba(110, 68, 255, 0.1);
+  border: 1px solid rgba(110, 68, 255, 0.25);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: var(--secondary);
+  font-weight: 600;
+}
+
+.project-meta-actions {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.project-meta-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.project-progress-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.project-progress-text {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.project-cost-text {
+  font-weight: bold;
+  color: var(--success);
+}
+
+.project-action-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+
 /* Sidebar Navigation */
 .sidebar {
   background: var(--bg-sidebar);
@@ -772,6 +824,59 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
+  }
+
+  /* 4분면(2x2) 통계 그리드 배치 (모든 계정 공통 적용) */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 15px !important;
+  }
+
+  /* 홀수 개의 카드일 경우 마지막 카드를 넓게 2열 차지하도록 처리 */
+  .stats-grid > .stats-card:last-child:nth-child(odd) {
+    grid-column: span 2;
+  }
+
+  /* 프로젝트 메타 정보 및 액션 버튼 가로 나란히 배치 */
+  .project-meta-actions {
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-top: 15px !important;
+    padding-top: 15px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+    justify-content: space-between !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .project-meta-info {
+    align-items: flex-start !important;
+  }
+
+  .project-action-buttons {
+    gap: 6px !important;
+  }
+
+  .project-action-buttons .btn-sm {
+    padding: 6px 8px !important;
+    font-size: 0.75rem !important;
+  }
+
+  /* 세션 작업 목록 테이블 모바일 환경 최적화 */
+  .custom-table {
+    font-size: 0.75rem !important;
+  }
+
+  .custom-table th, 
+  .custom-table td {
+    padding: 8px 6px !important;
+    white-space: nowrap !important; /* 텍스트 줄바꿈 방지 */
+  }
+
+  /* 지정 가로폭 스타일 초기화 */
+  .custom-table th[style], 
+  .custom-table td[style] {
+    width: auto !important;
   }
 
   /* Dashboard responsive grid adjustments */
