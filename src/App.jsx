@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import { calculateSettlement } from './utils/billing.js';
 
@@ -74,6 +74,158 @@ const INITIAL_TASKS = [
   { id: 1101, projectId: 11, workerId: 6, taskType: 'FGD', durationMinutes: 80, roundedMinutes: 90, cost: 70000, status: 'COMPLETED', submittedAt: '2026-12-10' }
 ];
 
+// Reusable Custom Month Calendar Picker Component
+function CustomMonthPicker({ value, onChange }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [year, setYear] = useState(parseInt(value.split('-')[0]) || 2026);
+  const [month, setMonth] = useState(value.split('-')[1] || '05');
+
+  // Sync state if value prop changes externally
+  useEffect(() => {
+    if (value) {
+      setYear(parseInt(value.split('-')[0]) || 2026);
+      setMonth(value.split('-')[1] || '05');
+    }
+  }, [value]);
+
+  const handleYearChange = (newYear) => {
+    setYear(newYear);
+    onChange(`${newYear}-${month}`);
+  };
+
+  const handleMonthClick = (m) => {
+    setMonth(m);
+    onChange(`${year}-${m}`);
+    setIsOpen(false);
+  };
+
+  return (
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      {/* Input Display Box */}
+      <div 
+        className="form-input" 
+        style={{ 
+          padding: '5px 10px', 
+          fontSize: '0.85rem', 
+          width: '160px', 
+          background: '#ffffff', 
+          color: 'var(--text-color)', 
+          border: '1px solid var(--border-color)', 
+          borderRadius: '4px', 
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          userSelect: 'none'
+        }}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span>{year}년 {parseInt(month)}월</span>
+        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>📅</span>
+      </div>
+
+      {/* Backdrop to close picker on click outside */}
+      {isOpen && (
+        <div 
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 998, background: 'transparent' }}
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Popover Picker */}
+      {isOpen && (
+        <div 
+          className="glass-card" 
+          style={{ 
+            position: 'absolute', 
+            top: '100%', 
+            left: 0, 
+            zIndex: 999, 
+            marginTop: '5px', 
+            padding: '12px', 
+            width: '240px', 
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+            border: '1px solid var(--border-color)',
+            background: '#ffffff'
+          }}
+        >
+          {/* Year Selector Row */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
+            <button 
+              type="button" 
+              className="btn btn-outline" 
+              style={{ padding: '2px 8px', fontSize: '0.8rem', minWidth: 'auto', background: 'none' }}
+              onClick={() => handleYearChange(year - 1)}
+              disabled={year <= 2025}
+            >
+              &lt;
+            </button>
+            
+            {/* Clickable Year Dropdown */}
+            <select 
+              value={year} 
+              onChange={(e) => handleYearChange(parseInt(e.target.value))}
+              style={{ 
+                background: 'transparent', 
+                color: 'var(--text-color)', 
+                border: 'none', 
+                fontSize: '0.9rem', 
+                fontWeight: 'bold', 
+                cursor: 'pointer',
+                outline: 'none',
+                textAlign: 'center',
+                padding: '2px 10px',
+                appearance: 'none',
+                WebkitAppearance: 'none'
+              }}
+            >
+              <option value="2025" style={{ background: '#ffffff', color: 'var(--text-main)' }}>2025년</option>
+              <option value="2026" style={{ background: '#ffffff', color: 'var(--text-main)' }}>2026년</option>
+            </select>
+
+            <button 
+              type="button" 
+              className="btn btn-outline" 
+              style={{ padding: '2px 8px', fontSize: '0.8rem', minWidth: 'auto', background: 'none' }}
+              onClick={() => handleYearChange(year + 1)}
+              disabled={year >= 2026}
+            >
+              &gt;
+            </button>
+          </div>
+
+          {/* Months Grid (3x4) */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', textAlign: 'center' }}>
+            {['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'].map((m) => {
+              const isSelected = m === month;
+              return (
+                <div 
+                  key={m}
+                  style={{ 
+                    padding: '6px 0', 
+                    fontSize: '0.8rem', 
+                    borderRadius: '4px', 
+                    cursor: 'pointer',
+                    background: isSelected ? 'var(--secondary-glow)' : 'transparent',
+                    color: isSelected ? 'var(--secondary)' : 'var(--text-color)',
+                    border: isSelected ? '1px solid var(--secondary)' : '1px solid transparent',
+                    fontWeight: isSelected ? 'bold' : 'normal'
+                  }}
+                  onClick={() => handleMonthClick(m)}
+                  onMouseEnter={(e) => { if(!isSelected) e.target.style.background = 'rgba(0,0,0,0.03)'; }}
+                  onMouseLeave={(e) => { if(!isSelected) e.target.style.background = 'transparent'; }}
+                >
+                  {parseInt(m)}월
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function App() {
   // State for mock database
   const [users, setUsers] = useState(INITIAL_USERS);
@@ -96,7 +248,7 @@ export default function App() {
   };
   
   // Collapsed/Expanded projects state (key: project ID, val: boolean)
-  const [expandedProjects, setExpandedProjects] = useState({ 1: true });
+  const [expandedProjects, setExpandedProjects] = useState({});
 
   // Admin Account management sub-tabs: 'PIC' vs 'WORKER'
   const [adminUserTab, setAdminUserTab] = useState('PIC');
@@ -109,16 +261,34 @@ export default function App() {
   const [hoveredBarIndex, setHoveredBarIndex] = useState(null);
 
   // Requirement #5: Monthly filter for scripter earnings chart
-  const [selectedScripterMonth, setSelectedScripterMonth] = useState('ALL');
+  const [selectedScripterMonth, setSelectedScripterMonth] = useState('2026-05');
+  const [scripterFilterAll, setScripterFilterAll] = useState(false);
 
   // PM Summary Table Monthly Filter
   const [selectedPmMonth, setSelectedPmMonth] = useState('ALL');
+  
+  // Worker Settlement Monthly Filter
+  const [selectedWorkerMonth, setSelectedWorkerMonth] = useState('2026-05');
+  const [workerFilterAll, setWorkerFilterAll] = useState(false);
+
+  // PIC Project Monthly Filter
+  const [selectedPicMonth, setSelectedPicMonth] = useState('2026-05');
+  const [picFilterAll, setPicFilterAll] = useState(false);
+
+  // User Feedback States
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackContent, setFeedbackContent] = useState('');
+  const [feedbacks, setFeedbacks] = useState([
+    { id: 1, senderName: '스크립터1', senderRole: 'WORKER', content: '녹취 파일이 업로드되었을 때 카카오톡 알림톡 기능이 추가되었으면 좋겠습니다.', createdAt: '2026-05-20 14:32' },
+    { id: 2, senderName: '김민정 PM', senderRole: 'PIC', content: '정산 비용 계산 시 소수점 버림 기준을 15분 단위로 깔끔하게 절상/절하하는 기능이 아주 편리합니다.', createdAt: '2026-05-22 10:15' }
+  ]);
 
   // Project Monitoring In Progress / Completed sub tab state
   const [projectSubTab, setProjectSubTab] = useState('IN_PROGRESS');
 
   // Requirement #6: Selected Scripter Detail Popup Modal state
   const [selectedScripterDetail, setSelectedScripterDetail] = useState(null);
+  const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
 
   // Form states
   const [newProject, setNewProject] = useState({ projectNo: '', name: '', field: 'IT', totalTasksCount: 1 });
@@ -207,8 +377,27 @@ export default function App() {
 
     setProjects([...projects, newProjObj]);
     setTasks([...tasks, ...newTasksList]);
-    setExpandedProjects(prev => ({ ...prev, [newProjObj.id]: true })); 
     setNewProject({ projectNo: '', name: '', field: 'IT', totalTasksCount: 1 });
+    setShowCreateProjectModal(false);
+  };
+
+  // Handle User Feedback Submit
+  const handleFeedbackSubmit = (e) => {
+    e.preventDefault();
+    if (!feedbackContent.trim()) return alert('피드백 내용을 입력해주세요.');
+    
+    const newFeedback = {
+      id: Date.now(),
+      senderName: currentUser.name,
+      senderRole: currentUser.role,
+      content: feedbackContent.trim(),
+      createdAt: new Date().toISOString().replace('T', ' ').substring(0, 16)
+    };
+    
+    setFeedbacks([newFeedback, ...feedbacks]);
+    setFeedbackContent('');
+    setShowFeedbackModal(false);
+    alert('소중한 피드백이 전송되었습니다. 관리자가 확인 후 검토하도록 하겠습니다.');
   };
 
   // Delete Project
@@ -410,8 +599,7 @@ export default function App() {
         '작업 종류': t.taskType === 'FGD' ? '좌담회' : '인터뷰(Depth)',
         '스크립터 ID': worker ? worker.scripterId : '미지정',
         '스크립터 이름': worker ? worker.name : '미지정',
-        '실제 재생 시간': t.status === 'COMPLETED' ? `${t.durationMinutes}분` : '미제출',
-        '정산 반영 시간': t.status === 'COMPLETED' ? `${t.roundedMinutes}분` : '미제출',
+        '녹취 시간': t.status === 'COMPLETED' ? `${t.durationMinutes}분` : '미제출',
         '산출 비용 (원)': t.status === 'COMPLETED' ? t.cost : 0,
         '상태': t.status === 'COMPLETED' ? '완료' : t.status === 'ASSIGNED' ? '진행중' : '대기'
       };
@@ -435,7 +623,7 @@ export default function App() {
         '작업 구분': t.taskType === 'FGD' ? '좌담회' : '인터뷰(Depth)',
         '스크립터 ID': worker?.scripterId || 'N/A',
         '스크립터 이름': worker?.name || '미배정',
-        '정산 시간': t.status === 'COMPLETED' ? `${t.roundedMinutes}분` : '-',
+        '녹취 시간': t.status === 'COMPLETED' ? `${t.durationMinutes}분` : '-',
         '정산 비용': t.status === 'COMPLETED' ? t.cost : 0,
         '상태': t.status
       };
@@ -449,22 +637,40 @@ export default function App() {
   const isAdmin = currentUser.role === 'ADMIN';
 
   // Filters display projects
-  const myProjects = projects.filter(p => p.picId === currentUser.id);
+  const picMonthPrefix = picFilterAll
+    ? `${selectedChartYear}`
+    : selectedPicMonth;
+
+  const myProjects = projects.filter(p => {
+    if (p.picId !== currentUser.id) return false;
+    return p.createdAt?.startsWith(picMonthPrefix);
+  });
   const displayProjects = isAdmin ? projects : isPIC ? myProjects : projects.filter(p => tasks.some(t => t.projectId === p.id && t.workerId === currentUser.id));
   
   // Completed lists
   const completedTasks = tasks.filter(t => t.status === 'COMPLETED');
   const workerCompletedTasks = completedTasks.filter(t => t.workerId === currentUser.id);
   const workerAssignedTasks = tasks.filter(t => t.workerId === currentUser.id && t.status === 'ASSIGNED');
+
+  // Worker Monthly Filtered
+  const workerMonthPrefix = workerFilterAll
+    ? `${selectedChartYear}`
+    : selectedWorkerMonth;
+  const filteredWorkerTasks = workerCompletedTasks.filter(t => 
+    t.submittedAt?.startsWith(workerMonthPrefix)
+  );
   
   // Total costs calculations
   const totalCostOverall = completedTasks.reduce((sum, t) => sum + t.cost, 0);
   const totalCostPIC = completedTasks.filter(t => {
     const proj = projects.find(p => p.id === t.projectId);
-    return proj?.picId === currentUser.id;
+    if (!proj || proj.picId !== currentUser.id) return false;
+    return proj.createdAt?.startsWith(picMonthPrefix);
   }).reduce((sum, t) => sum + t.cost, 0);
   
   const totalCostWorker = workerCompletedTasks.reduce((sum, t) => sum + t.cost, 0);
+  const totalWorkerCostFiltered = filteredWorkerTasks.reduce((sum, t) => sum + t.cost, 0);
+  const totalDurationFiltered = filteredWorkerTasks.reduce((sum, t) => sum + t.durationMinutes, 0);
 
   // Requirement #2: Annual cumulative projects calculation (for the annual stats widget)
   const annualProjects = projects.filter(p => p.createdAt?.startsWith(String(selectedChartYear)));
@@ -477,9 +683,9 @@ export default function App() {
 
   // Requirement #5: Monthly filter for Scripter earnings chart
   const scripterStats = users.filter(u => u.role === 'WORKER').map(w => {
-    const prefix = selectedScripterMonth === 'ALL' 
+    const prefix = scripterFilterAll 
       ? `${selectedChartYear}` 
-      : `${selectedChartYear}-${selectedScripterMonth}`;
+      : selectedScripterMonth;
       
     const workerTasks = tasks.filter(t => {
       const proj = projects.find(p => p.id === t.projectId);
@@ -622,6 +828,9 @@ export default function App() {
                 <div className={`nav-item ${activeTab === 'accounts' ? 'active' : ''}`} onClick={() => handleNavClick('accounts')}>
                   👨‍💼 계정 관리
                 </div>
+                <div className={`nav-item ${activeTab === 'feedbacks' ? 'active' : ''}`} onClick={() => handleNavClick('feedbacks')}>
+                  💬 피드백 관리
+                </div>
               </>
             )}
             
@@ -651,21 +860,50 @@ export default function App() {
 
         {/* User profile section & Logout button */}
         <div className="user-profile-section">
-          <div className="user-avatar-info">
-            <div className="avatar">
-              {currentUser.name[0]}
+          <div className="user-avatar-info" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div className="avatar">
+                {currentUser.name[0]}
+              </div>
+              <div className="user-meta" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <span className="user-name" style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{currentUser.name}</span>
+                <span className={`badge ${isAdmin ? 'badge-admin' : isPIC ? 'badge-pic' : 'badge-worker'}`} style={{ width: 'fit-content' }}>
+                  {currentUser.role}
+                </span>
+              </div>
             </div>
-            <div className="user-meta">
-              <span className="user-name">{currentUser.name}</span>
-              <span className={`badge ${isAdmin ? 'badge-admin' : isPIC ? 'badge-pic' : 'badge-worker'}`}>
-                {currentUser.role}
-              </span>
-            </div>
+            <button className="btn btn-outline" style={{ padding: '6px 10px', fontSize: '0.75rem', whiteSpace: 'nowrap' }} onClick={handleLogout}>
+              🚪 로그아웃
+            </button>
           </div>
-          <button className="btn btn-outline" style={{ width: '100%', padding: '6px 12px', fontSize: '0.8rem' }} onClick={handleLogout}>
-            🚪 로그아웃
-          </button>
         </div>
+
+        {/* User Feedback Button */}
+        {!isWorker && (
+          <div style={{ padding: '0 20px', marginBottom: '15px', marginTop: '10px' }}>
+            <button 
+              className="btn btn-outline" 
+              style={{ 
+                width: '100%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                gap: '8px', 
+                padding: '10px', 
+                fontSize: '0.85rem',
+                background: 'transparent',
+                borderColor: 'var(--border-color)',
+                color: 'var(--text-color)',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: '500'
+              }}
+              onClick={() => setShowFeedbackModal(true)}
+            >
+              💬 사용자 피드백 보내기
+            </button>
+          </div>
+        )}
       </aside>
 
       {/* Main Panel Content */}
@@ -708,17 +946,17 @@ export default function App() {
           {isPIC && (
             <>
               <div className="glass-card stats-card">
-                <div className="stats-label">담당 진행 프로젝트</div>
+                <div className="stats-label">담당 프로젝트 ({picFilterAll ? '연간' : `${Number(selectedPicMonth.split('-')[1])}월`})</div>
                 <div className="stats-value">{myProjects.length} 건</div>
               </div>
               <div className="glass-card stats-card secondary">
-                <div className="stats-label">진행 중인 프로젝트</div>
+                <div className="stats-label">진행 중인 프로젝트 ({picFilterAll ? '연간' : `${Number(selectedPicMonth.split('-')[1])}월`})</div>
                 <div className="stats-value">
                   {myProjects.filter(p => p.status === 'IN_PROGRESS').length} 건
                 </div>
               </div>
               <div className="glass-card stats-card success">
-                <div className="stats-label">본인 프로젝트 정산 금액</div>
+                <div className="stats-label">본인 프로젝트 정산 금액 ({picFilterAll ? '연간' : `${Number(selectedPicMonth.split('-')[1])}월`})</div>
                 <div className="stats-value">₩{totalCostPIC.toLocaleString()}</div>
               </div>
             </>
@@ -731,12 +969,12 @@ export default function App() {
                 <div className="stats-value">{workerAssignedTasks.length} 건</div>
               </div>
               <div className="glass-card stats-card secondary">
-                <div className="stats-label font-bold">완료한 총 작업</div>
-                <div className="stats-value">{workerCompletedTasks.length} 건</div>
+                <div className="stats-label font-bold">완료 작업 건수 ({workerFilterAll ? '연간' : `${Number(selectedWorkerMonth.split('-')[1])}월`})</div>
+                <div className="stats-value">{filteredWorkerTasks.length} 건</div>
               </div>
               <div className="glass-card stats-card success">
-                <div className="stats-label">이달 예상 정산액</div>
-                <div className="stats-value">₩{totalCostWorker.toLocaleString()}</div>
+                <div className="stats-label">예상 정산액 ({workerFilterAll ? '연간' : `${Number(selectedWorkerMonth.split('-')[1])}월`})</div>
+                <div className="stats-value">₩{totalWorkerCostFiltered.toLocaleString()}</div>
               </div>
             </>
           )}
@@ -888,23 +1126,22 @@ export default function App() {
                 <h2>📊 스크립터별 누적지급 정산액 비교</h2>
                 
                 {/* Monthly Filter (Requirement #5) */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span className="form-label" style={{ margin: 0 }}>월 선택:</span>
-                  <select className="form-select" style={{ padding: '6px 12px', fontSize: '0.85rem' }} value={selectedScripterMonth} onChange={(e) => setSelectedScripterMonth(e.target.value)}>
-                    <option value="ALL">전체 (연간)</option>
-                    <option value="01">1월</option>
-                    <option value="02">2월</option>
-                    <option value="03">3월</option>
-                    <option value="04">4월</option>
-                    <option value="05">5월</option>
-                    <option value="06">6월</option>
-                    <option value="07">7월</option>
-                    <option value="08">8월</option>
-                    <option value="09">9월</option>
-                    <option value="10">10월</option>
-                    <option value="11">11월</option>
-                    <option value="12">12월</option>
-                  </select>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', cursor: 'pointer', margin: 0, userSelect: 'none' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={scripterFilterAll} 
+                      onChange={(e) => setScripterFilterAll(e.target.checked)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <span>전체 기간 조회</span>
+                  </label>
+                  {!scripterFilterAll && (
+                    <CustomMonthPicker 
+                      value={selectedScripterMonth} 
+                      onChange={(val) => setSelectedScripterMonth(val)} 
+                    />
+                  )}
                 </div>
               </div>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '20px' }}>
@@ -1123,16 +1360,42 @@ export default function App() {
 
         {/* ----------------- [PROJECTS MONITORING TAB] ----------------- */}
         {activeTab === 'projects' && (
-          <div className={`${isPIC ? 'content-grid' : ''} animated-fade-in`}>
+          <div className="animated-fade-in">
             {/* Projects List */}
             <div className="glass-card card-padding">
               <div className="section-title">
                 <h2>{isAdmin ? '📊 전체 프로젝트 모니터링' : isPIC ? '📂 내 관리 프로젝트' : '📋 참여 프로젝트 및 배정 정보'}</h2>
-                {isAdmin && (
-                  <button className="btn btn-outline" onClick={handleDownloadAllAdmin}>
-                    📥 전체 정산 엑셀(CSV) 다운로드
-                  </button>
-                )}
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  {isPIC && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginRight: '10px' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', cursor: 'pointer', margin: 0, userSelect: 'none' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={picFilterAll} 
+                          onChange={(e) => setPicFilterAll(e.target.checked)}
+                          style={{ cursor: 'pointer' }}
+                        />
+                        <span>전체 기간 조회</span>
+                      </label>
+                      {!picFilterAll && (
+                        <CustomMonthPicker 
+                          value={selectedPicMonth} 
+                          onChange={(val) => setSelectedPicMonth(val)} 
+                        />
+                      )}
+                    </div>
+                  )}
+                  {isPIC && (
+                    <button className="btn btn-primary" onClick={() => setShowCreateProjectModal(true)}>
+                      ➕ 프로젝트 개설
+                    </button>
+                  )}
+                  {isAdmin && (
+                    <button className="btn btn-outline" onClick={handleDownloadAllAdmin}>
+                      📥 전체 정산 엑셀(CSV) 다운로드
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Requirement #2: Completed/Ongoing Project Tabs */}
@@ -1177,14 +1440,14 @@ export default function App() {
                   const isExpanded = !!expandedProjects[proj.id];
 
                   return (
-                    <div key={proj.id} className="glass-card" style={{ padding: '24px', marginBottom: '24px', background: 'rgba(255, 255, 255, 0.01)' }}>
+                    <div key={proj.id} className="glass-card" style={{ padding: '24px', marginBottom: '24px', background: 'var(--bg-card)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '15px' }}>
                         
                         {/* Left: Project Info */}
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
                             <span style={{ fontSize: '0.8rem', color: 'var(--secondary)', fontWeight: 'bold' }}>{proj.projectNo}</span>
-                            <span className="badge badge-worker" style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)' }}>{proj.field}</span>
+                            <span className="badge badge-worker" style={{ background: 'rgba(0, 0, 0, 0.03)', color: 'var(--text-muted)' }}>{proj.field}</span>
                           </div>
                           <h3 style={{ margin: 0, fontSize: '1.2rem' }}>{proj.name}</h3>
                         </div>
@@ -1246,8 +1509,7 @@ export default function App() {
                                 <tr style={{ background: 'none' }}>
                                   <th>작업구분</th>
                                   <th>배정된 스크립터</th>
-                                  <th>입력 시간</th>
-                                  <th>정산 시간</th>
+                                  <th>녹취 시간</th>
                                   <th>산출 비용</th>
                                   <th>상태</th>
                                   {(isPIC || isWorker) && <th style={{ textAlign: 'right' }}>액션</th>}
@@ -1276,14 +1538,11 @@ export default function App() {
                                         {task.status === 'COMPLETED' ? `${task.durationMinutes}분` : '-'}
                                       </td>
                                       <td>
-                                        {task.status === 'COMPLETED' ? `${task.roundedMinutes}분` : '-'}
-                                      </td>
-                                      <td>
                                         {task.status === 'COMPLETED' ? `₩${task.cost.toLocaleString()}` : '-'}
                                       </td>
                                       <td>
                                         <span className={`badge`} style={{
-                                          background: task.status === 'COMPLETED' ? 'var(--success-glow)' : task.status === 'ASSIGNED' ? 'var(--warning-glow)' : 'rgba(255,255,255,0.03)',
+                                          background: task.status === 'COMPLETED' ? 'var(--success-glow)' : task.status === 'ASSIGNED' ? 'var(--warning-glow)' : 'rgba(0, 0, 0, 0.03)',
                                           color: task.status === 'COMPLETED' ? 'var(--success)' : task.status === 'ASSIGNED' ? 'var(--warning)' : 'var(--text-muted)'
                                         }}>
                                           {task.status === 'COMPLETED' ? '완료' : task.status === 'ASSIGNED' ? '진행중' : '대기'}
@@ -1335,44 +1594,6 @@ export default function App() {
                 });
               })()}
             </div>
-
-            {/* Right column: Create Project form for PIC */}
-            {isPIC && (
-              <div className="glass-card card-padding" style={{ height: 'fit-content' }}>
-                <h2>➕ 신규 프로젝트 개설</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '20px' }}>
-                  좌담회 또는 Depth 인터뷰 프로젝트를 신설하고 일괄 작업을 생성합니다.
-                </p>
-                <form onSubmit={handleCreateProject}>
-                  <div className="form-group">
-                    <label className="form-label">프로젝트 번호</label>
-                    <input className="form-input" type="text" placeholder="예: 2025-36-0261" value={newProject.projectNo} onChange={(e) => setNewProject({ ...newProject, projectNo: e.target.value })} />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">프로젝트 명</label>
-                    <input className="form-input" type="text" placeholder="예: 전동창호 FGD" value={newProject.name} onChange={(e) => setNewProject({ ...newProject, name: e.target.value })} />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">분야</label>
-                    <select className="form-select" value={newProject.field} onChange={(e) => setNewProject({ ...newProject, field: e.target.value })}>
-                      <option value="IT">IT</option>
-                      <option value="정치">정치</option>
-                      <option value="금융">금융</option>
-                      <option value="가전">가전</option>
-                      <option value="의학">의학</option>
-                      <option value="식품">식품</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">예정 작업 수 (세션 갯수)</label>
-                    <input className="form-input" type="number" min="1" max="20" value={newProject.totalTasksCount} onChange={(e) => setNewProject({ ...newProject, totalTasksCount: e.target.value })} />
-                  </div>
-                  <button className="btn btn-primary" type="submit" style={{ width: '100%', marginTop: '10px' }}>
-                    프로젝트 개설
-                  </button>
-                </form>
-              </div>
-            )}
           </div>
         )}
 
@@ -1390,56 +1611,42 @@ export default function App() {
                   <tr>
                     <th>스크립터 ID</th>
                     <th>이름</th>
+                    <th>연락처 / 이메일</th>
                     <th>전문 분야</th>
-                    <th>이번 주 좌담회 배정</th>
-                    <th>이번 주 인터뷰 배정</th>
-                    <th>상태 및 경고</th>
+                    <th>현재 주간 배정 업무량</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {users.filter(u => u.role === 'WORKER').map(scripter => {
-                    const load = getScripterWorkload(scripter.id);
-                    const isFgdExceeded = load.fgdCount > 6;
-                    const isInterviewExceeded = load.depthCount > 1;
-                    
+                  {users.filter(u => u.role === 'WORKER').map(worker => {
+                    const load = getScripterWorkload(worker.id);
                     return (
-                      <tr key={scripter.id}>
-                        <td>{scripter.scripterId}</td>
-                        <td><strong>{scripter.name}</strong></td>
-                        <td>{scripter.specialtyText}</td>
+                      <tr key={worker.id}>
+                        <td><strong>{worker.scripterId}</strong></td>
+                        <td><strong>{worker.name}</strong></td>
                         <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span>{load.fgdCount} 그룹</span>
-                            <div className="workload-progress-bar" style={{ width: '80px', margin: 0 }}>
-                              <div className={`workload-fill ${load.fgdCount >= 5 ? 'warning' : ''}`} style={{ width: `${Math.min((load.fgdCount / 6) * 100, 100)}%` }}></div>
-                            </div>
-                          </div>
+                          <div>{worker.contact}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{worker.email}</div>
                         </td>
                         <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span>{load.depthCount} 개</span>
-                            <div className="workload-progress-bar" style={{ width: '80px', margin: 0 }}>
-                              <div className={`workload-fill ${load.depthCount >= 1 ? 'danger' : ''}`} style={{ width: `${Math.min((load.depthCount / 1) * 100, 100)}%` }}></div>
-                            </div>
-                          </div>
+                          <span style={{ fontSize: '0.85rem' }}>
+                            {worker.specialtyText} ({worker.canFgd ? '좌담회O' : '좌담회X'}, {worker.canInterview ? '인터뷰O' : '인터뷰X'})
+                          </span>
                         </td>
                         <td>
-                          {scripter.specialty === 'FGD_ONLY' && (
-                            <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', block: 'block' }}>⚠️ 좌담회 전용</span>
-                          )}
-                          {isInterviewExceeded && (
-                            <div className="danger-box" style={{ margin: 0, padding: '2px 8px', fontSize: '0.75rem' }}>
-                              ⚠️ 주간 인터뷰 초과 ({load.depthCount}/1)
-                            </div>
-                          )}
-                          {isFgdExceeded && (
-                            <div className="warning-box" style={{ margin: 0, padding: '2px 8px', fontSize: '0.75rem' }}>
-                              ⚠️ 주간 좌담회 초과 ({load.fgdCount}/6)
-                            </div>
-                          )}
-                          {!isFgdExceeded && !isInterviewExceeded && (
-                            <span style={{ color: 'var(--success)', fontWeight: '600', fontSize: '0.8rem' }}>✓ 여유 있음</span>
-                          )}
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <span className={`badge ${load.fgdCount >= 6 ? 'badge-danger' : 'badge-success'}`} style={{
+                              background: load.fgdCount >= 6 ? 'var(--danger-glow)' : 'var(--success-glow)',
+                              color: load.fgdCount >= 6 ? 'var(--danger)' : 'var(--success)'
+                            }}>
+                              좌담회: {load.fgdCount}그룹
+                            </span>
+                            <span className={`badge ${load.depthCount >= 1 ? 'badge-danger' : 'badge-success'}`} style={{
+                              background: load.depthCount >= 1 ? 'var(--danger-glow)' : 'var(--success-glow)',
+                              color: load.depthCount >= 1 ? 'var(--danger)' : 'var(--success)'
+                            }}>
+                              인터뷰: {load.depthCount}건
+                            </span>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1455,7 +1662,28 @@ export default function App() {
           <div className="content-grid animated-fade-in">
             {/* Left: performances list */}
             <div className="glass-card card-padding">
-              <h2>💳 월간 / 프로젝트별 정산 실적</h2>
+              <div className="section-title">
+                <h2>💳 월간 / 프로젝트별 정산 실적</h2>
+                
+                {/* Monthly Filter */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', cursor: 'pointer', margin: 0, userSelect: 'none' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={workerFilterAll} 
+                      onChange={(e) => setWorkerFilterAll(e.target.checked)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <span>전체 기간 조회</span>
+                  </label>
+                  {!workerFilterAll && (
+                    <CustomMonthPicker 
+                      value={selectedWorkerMonth} 
+                      onChange={(val) => setSelectedWorkerMonth(val)} 
+                    />
+                  )}
+                </div>
+              </div>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '20px' }}>
                 귀하가 최종 제출 완료하여 승인된 정산 실적 리스트입니다.
               </p>
@@ -1467,18 +1695,17 @@ export default function App() {
                       <th>제출일</th>
                       <th>프로젝트 번호</th>
                       <th>구분</th>
-                      <th>입력 시간</th>
-                      <th>정산 인정 시간</th>
+                      <th>녹취 시간</th>
                       <th>정산 금액</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {workerCompletedTasks.length === 0 ? (
+                    {filteredWorkerTasks.length === 0 ? (
                       <tr>
-                        <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>완료 처리된 내역이 없습니다.</td>
+                        <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>선택하신 월에 완료 처리된 내역이 없습니다.</td>
                       </tr>
                     ) : (
-                      workerCompletedTasks.map(t => {
+                      filteredWorkerTasks.map(t => {
                         const proj = projects.find(p => p.id === t.projectId);
                         return (
                           <tr key={t.id}>
@@ -1486,7 +1713,6 @@ export default function App() {
                             <td>{proj?.projectNo}</td>
                             <td>{t.taskType === 'FGD' ? '좌담회' : '인터뷰'}</td>
                             <td>{t.durationMinutes}분</td>
-                            <td>{t.roundedMinutes}분</td>
                             <td style={{ fontWeight: 'bold', color: 'var(--success)' }}>₩{t.cost.toLocaleString()}</td>
                           </tr>
                         );
@@ -1499,27 +1725,21 @@ export default function App() {
 
             {/* Right: Summary box */}
             <div className="glass-card card-padding" style={{ height: 'fit-content' }}>
-              <h2>📊 정산 요약 리포트</h2>
+              <h2>📊 정산 요약 리포트 ({selectedWorkerMonth === 'ALL' ? '연간' : `${Number(selectedWorkerMonth)}월`})</h2>
               <div style={{ margin: '20px 0' }} className="summary-widget">
                 <div className="summary-row">
                   <span>총 완료 세션 수:</span>
-                  <span className="summary-value">{workerCompletedTasks.length} 건</span>
+                  <span className="summary-value">{filteredWorkerTasks.length} 건</span>
                 </div>
                 <div className="summary-row">
-                  <span>총 작업 녹음 시간:</span>
+                  <span>총 작업 녹취 시간:</span>
                   <span className="summary-value">
-                    {Math.floor(workerCompletedTasks.reduce((sum, t) => sum + t.durationMinutes, 0) / 60)}시간 {workerCompletedTasks.reduce((sum, t) => sum + t.durationMinutes, 0) % 60}분
-                  </span>
-                </div>
-                <div className="summary-row">
-                  <span>정산 환산 시간:</span>
-                  <span className="summary-value">
-                    {Math.floor(workerCompletedTasks.reduce((sum, t) => sum + t.roundedMinutes, 0) / 60)}시간 {workerCompletedTasks.reduce((sum, t) => sum + t.roundedMinutes, 0) % 60}분
+                    {Math.floor(totalDurationFiltered / 60)}시간 {totalDurationFiltered % 60}분
                   </span>
                 </div>
                 <div className="summary-row summary-total">
                   <span>최종 정산 예상액:</span>
-                  <span>₩{totalCostWorker.toLocaleString()}</span>
+                  <span>₩{totalWorkerCostFiltered.toLocaleString()}</span>
                 </div>
               </div>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
@@ -1551,8 +1771,7 @@ export default function App() {
                     <th>담당 PM</th>
                     <th>구분</th>
                     <th>스크립터 (ID)</th>
-                    <th>입력 재생시간</th>
-                    <th>정산 시간</th>
+                    <th>녹취 시간</th>
                     <th>금액 (원)</th>
                     <th>상태</th>
                   </tr>
@@ -1579,13 +1798,12 @@ export default function App() {
                           )}
                         </td>
                         <td>{t.status === 'COMPLETED' ? `${t.durationMinutes}분` : '-'}</td>
-                        <td>{t.status === 'COMPLETED' ? `${t.roundedMinutes}분` : '-'}</td>
                         <td style={{ fontWeight: 'bold', color: t.status === 'COMPLETED' ? 'var(--success)' : 'inherit' }}>
                           {t.status === 'COMPLETED' ? `₩${t.cost.toLocaleString()}` : '-'}
                         </td>
                         <td>
                           <span className={`badge`} style={{
-                            background: t.status === 'COMPLETED' ? 'var(--success-glow)' : t.status === 'ASSIGNED' ? 'var(--warning-glow)' : 'rgba(255,255,255,0.03)',
+                            background: t.status === 'COMPLETED' ? 'var(--success-glow)' : t.status === 'ASSIGNED' ? 'var(--warning-glow)' : 'rgba(0, 0, 0, 0.03)',
                             color: t.status === 'COMPLETED' ? 'var(--success)' : t.status === 'ASSIGNED' ? 'var(--warning)' : 'var(--text-muted)'
                           }}>
                             {t.status === 'COMPLETED' ? '완료' : t.status === 'ASSIGNED' ? '진행중' : '대기'}
@@ -1596,6 +1814,41 @@ export default function App() {
                   })}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {isAdmin && activeTab === 'feedbacks' && (
+          <div className="glass-card card-padding animated-fade-in">
+            <div className="section-title">
+              <h2>💬 사용자 피드백 접수 현황</h2>
+              <span className="badge badge-admin" style={{ fontSize: '0.85rem' }}>{feedbacks.length}건 접수됨</span>
+            </div>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
+              사용자들이 시스템 사용 중 남겨주신 개선 건의사항 및 소중한 피드백 리스트입니다.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              {feedbacks.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                  접수된 피드백이 없습니다.
+                </div>
+              ) : (
+                feedbacks.map(f => (
+                  <div key={f.id} className="glass-card card-padding" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <strong>{f.senderName}</strong>
+                        <span className={`badge ${f.senderRole === 'ADMIN' ? 'badge-admin' : f.senderRole === 'PIC' ? 'badge-pic' : 'badge-worker'}`} style={{ fontSize: '0.75rem' }}>
+                          {f.senderRole === 'ADMIN' ? '관리자' : f.senderRole === 'PIC' ? '담당 PM' : '스크립터'}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{f.createdAt}</span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.5', whiteSpace: 'pre-wrap', color: 'var(--text-color)' }}>{f.content}</p>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}
@@ -1649,7 +1902,7 @@ export default function App() {
                   }
 
                   return (
-                    <div key={worker.id} className="glass-card" style={{ padding: '12px', border: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.015)' }}>
+                    <div key={worker.id} className="glass-card" style={{ padding: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-card)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
                           <strong>{worker.name}</strong>
@@ -1713,21 +1966,15 @@ export default function App() {
                   <div style={{ marginTop: '20px' }} className="summary-widget animated-fade-in">
                     <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>💰 예상 자동 정산 정보</h4>
                     <div className="summary-row">
-                      <span>입력된 분:</span>
+                      <span>녹취 시간:</span>
                       <span>{inputDuration.minutes}분</span>
-                    </div>
-                    <div className="summary-row">
-                      <span>정산 반영 시간:</span>
-                      <span className="summary-value" style={{ color: 'var(--secondary)' }}>
-                        {liveCalc.roundedMinutes}분 (30분 단위 절상/절하)
-                      </span>
                     </div>
                     <div className="summary-row summary-total">
                       <span>최종 산정 비용:</span>
                       <span>₩{liveCalc.cost.toLocaleString()}</span>
                     </div>
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, borderTop: '1px solid var(--border-color)', paddingTop: '8px' }}>
-                      * 15분 미만(예: 74분 $\rightarrow$ 60분)은 내림, 15분 이상(예: 75분 $\rightarrow$ 90분)은 올림 처리됩니다.
+                      * 15분 미만(예: 74분 → 60분)은 내림, 15분 이상(예: 75분 → 90분)은 올림 처리됩니다.
                     </p>
                   </div>
                 )}
@@ -1741,11 +1988,56 @@ export default function App() {
         </div>
       )}
 
-      {/* ----------------- [MODAL: REQUIREMENT #6 - SCRIPTER STATEMENT DETAIL POPUP] ----------------- */}
+      {/* ----------------- [MODAL: CREATE PROJECT POPUP] ----------------- */}
+      {showCreateProjectModal && (
+        <div className="modal-overlay">
+          <div className="glass-card modal-content" style={{ maxWidth: '500px', width: '90%' }}>
+            <div className="modal-header">
+              <h3>➕ 신규 프로젝트 개설</h3>
+              <button className="close-btn" onClick={() => setShowCreateProjectModal(false)}>×</button>
+            </div>
+            <form onSubmit={handleCreateProject}>
+              <div className="modal-body">
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '20px' }}>
+                  좌담회 또는 Depth 인터뷰 프로젝트를 신설하고 일괄 작업을 생성합니다.
+                </p>
+                <div className="form-group">
+                  <label className="form-label">프로젝트 번호</label>
+                  <input className="form-input" type="text" placeholder="예: 2025-36-0261" value={newProject.projectNo} onChange={(e) => setNewProject({ ...newProject, projectNo: e.target.value })} required />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">프로젝트 명</label>
+                  <input className="form-input" type="text" placeholder="예: 전동창호 FGD" value={newProject.name} onChange={(e) => setNewProject({ ...newProject, name: e.target.value })} required />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">분야</label>
+                  <select className="form-select" value={newProject.field} onChange={(e) => setNewProject({ ...newProject, field: e.target.value })}>
+                    <option value="IT">IT</option>
+                    <option value="정치">정치</option>
+                    <option value="금융">금융</option>
+                    <option value="가전">가전</option>
+                    <option value="의학">의학</option>
+                    <option value="식품">식품</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">예정 작업 수 (세션 갯수)</label>
+                  <input className="form-input" type="number" min="1" max="20" value={newProject.totalTasksCount} onChange={(e) => setNewProject({ ...newProject, totalTasksCount: e.target.value })} required />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button className="btn btn-outline" type="button" onClick={() => setShowCreateProjectModal(false)}>취소</button>
+                <button className="btn btn-primary" type="submit">프로젝트 개설</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {selectedScripterDetail && (() => {
-        const prefix = selectedScripterMonth === 'ALL' 
+        const prefix = scripterFilterAll 
           ? `${selectedChartYear}` 
-          : `${selectedChartYear}-${selectedScripterMonth}`;
+          : selectedScripterMonth;
         
         const filteredTasks = tasks.filter(t => 
           t.workerId === selectedScripterDetail.id && 
@@ -1759,7 +2051,7 @@ export default function App() {
           <div className="modal-overlay">
             <div className="glass-card modal-content" style={{ maxWidth: '800px', width: '90%' }}>
               <div className="modal-header">
-                <h3>📑 {selectedScripterDetail.name} ({selectedScripterDetail.scripterId}) {selectedChartYear}년 {selectedScripterMonth === 'ALL' ? '연간' : `${Number(selectedScripterMonth)}월`} 실적 명세서</h3>
+                <h3>📑 {selectedScripterDetail.name} ({selectedScripterDetail.scripterId}) {selectedChartYear}년 {scripterFilterAll ? '연간' : `${Number(selectedScripterMonth.split('-')[1])}월`} 실적 명세서</h3>
                 <button className="close-btn" onClick={() => setSelectedScripterDetail(null)}>×</button>
               </div>
               <div className="modal-body" style={{ maxHeight: '450px', overflowY: 'auto' }}>
@@ -1780,8 +2072,7 @@ export default function App() {
                           <th>프로젝트 번호</th>
                           <th>프로젝트 명</th>
                           <th>구분</th>
-                          <th>입력 시간</th>
-                          <th>정산 시간</th>
+                          <th>녹취 시간</th>
                           <th>정산 금액</th>
                         </tr>
                       </thead>
@@ -1795,14 +2086,13 @@ export default function App() {
                               <td><strong>{proj?.name}</strong></td>
                               <td>{t.taskType === 'FGD' ? '좌담회' : '인터뷰'}</td>
                               <td>{t.durationMinutes}분</td>
-                              <td>{t.roundedMinutes}분</td>
                               <td style={{ fontWeight: 'bold', color: 'var(--success)' }}>₩{t.cost.toLocaleString()}</td>
                             </tr>
                           );
                         })}
                         {/* Sum Row inside popup modal */}
-                        <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
-                          <td colSpan="6" style={{ fontWeight: 'bold', textAlign: 'right' }}>합계:</td>
+                        <tr style={{ background: '#f8fafc' }}>
+                          <td colSpan="5" style={{ fontWeight: 'bold', textAlign: 'right' }}>합계:</td>
                           <td style={{ fontWeight: 'bold', color: 'var(--success)' }}>
                             ₩{totalCost.toLocaleString()}
                           </td>
@@ -1819,6 +2109,41 @@ export default function App() {
           </div>
         );
       })()}
+
+      {/* ----------------- [MODAL: USER FEEDBACK POPUP] ----------------- */}
+      {showFeedbackModal && (
+        <div className="modal-overlay">
+          <div className="glass-card modal-content" style={{ maxWidth: '500px', width: '90%' }}>
+            <div className="modal-header">
+              <h3>💬 사용자 피드백 보내기</h3>
+              <button className="close-btn" onClick={() => setShowFeedbackModal(false)}>×</button>
+            </div>
+            <form onSubmit={handleFeedbackSubmit}>
+              <div className="modal-body">
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '15px' }}>
+                  시스템 사용 관련 불편사항이나 개선 건의사항을 남겨주시면 관리자에게만 전달되어 서비스 개선에 적극 반영됩니다.
+                </p>
+                <div className="form-group">
+                  <label className="form-label">피드백 내용</label>
+                  <textarea 
+                    className="form-input" 
+                    rows="6" 
+                    placeholder="건의하고 싶으신 피드백을 상세히 적어주세요..." 
+                    value={feedbackContent} 
+                    onChange={(e) => setFeedbackContent(e.target.value)}
+                    required
+                    style={{ resize: 'vertical', width: '100%', padding: '10px', fontSize: '0.9rem', color: 'var(--text-color)', background: '#ffffff', border: '1px solid var(--border-color)', borderRadius: '6px' }}
+                  />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button className="btn btn-outline" type="button" onClick={() => setShowFeedbackModal(false)}>취소</button>
+                <button className="btn btn-primary" type="submit">전송하기</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

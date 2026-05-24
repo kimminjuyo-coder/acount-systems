@@ -176,7 +176,7 @@
 
 .nav-item:hover, .nav-item.active {
   color: var(--text-main);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .nav-item.active {
@@ -242,7 +242,7 @@
   align-items: center;
   gap: 12px;
   padding: 6px 12px;
-  background: rgba(255, 255, 255, 0.03);
+  background: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: 12px;
 }
@@ -339,7 +339,7 @@
 
 .custom-table th {
   padding: 16px;
-  background: rgba(255, 255, 255, 0.02);
+  background: #f8fafc;
   border-bottom: 1px solid var(--border-color);
   font-weight: 600;
   color: var(--text-muted);
@@ -354,7 +354,7 @@
 }
 
 .custom-table tr:hover td {
-  background: rgba(255, 255, 255, 0.015);
+  background: rgba(0, 0, 0, 0.015);
 }
 
 /* Grid Layouts */
@@ -393,7 +393,7 @@
 .workload-item {
   padding: 14px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(0, 0, 0, 0.01);
   border: 1px solid var(--border-color);
 }
 
@@ -411,7 +411,7 @@
 
 .workload-progress-bar {
   height: 6px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.06);
   border-radius: 10px;
   overflow: hidden;
   margin-bottom: 8px;
@@ -517,9 +517,9 @@
 
 /* Info Box / Summary Widget */
 .summary-widget {
-  background: linear-gradient(135deg, var(--bg-card), rgba(110, 68, 255, 0.08));
-  border: 1px solid rgba(110, 68, 255, 0.2);
-  border-radius: 12px;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -601,7 +601,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(0, 0, 0, 0.015);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   cursor: pointer;
@@ -610,7 +610,7 @@
 }
 
 .hint-chip:hover {
-  background: rgba(110, 68, 255, 0.08);
+  background: var(--primary-glow);
   border-color: var(--primary);
   transform: translateX(4px);
 }
@@ -640,7 +640,7 @@
 
 .chart-bar-bg {
   height: 18px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 0, 0, 0.02);
   border-radius: 4px;
   overflow: hidden;
   display: flex;
@@ -649,15 +649,13 @@
 
 .chart-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  background: var(--primary);
   border-radius: 4px;
   transition: width 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 0 10px var(--primary-glow);
 }
 
 .chart-bar-fill.alternate {
-  background: linear-gradient(90deg, var(--secondary), var(--success));
-  box-shadow: 0 0 10px var(--secondary-glow);
+  background: var(--secondary);
 }
 
 .chart-value {
@@ -709,7 +707,7 @@
 
 .vertical-chart-bar-bg {
   width: 32px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(0, 0, 0, 0.015);
   border: 1px solid var(--border-color);
   border-radius: 6px 6px 0 0;
   height: 100%;
@@ -720,21 +718,20 @@
 }
 
 .vertical-chart-bar-bg:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.03);
   border-color: var(--primary);
-  box-shadow: 0 0 15px rgba(110, 68, 255, 0.15);
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.1);
 }
 
 .vertical-chart-bar-fill {
   width: 100%;
-  background: linear-gradient(0deg, var(--primary), var(--secondary));
-  border-radius: 5px 5px 0 0;
+  background: var(--primary);
+  border-radius: 4px 4px 0 0;
   transition: height 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .vertical-chart-bar-fill.active {
-  background: linear-gradient(0deg, var(--secondary), var(--success));
-  box-shadow: 0 0 12px var(--secondary-glow);
+  background: var(--secondary);
 }
 
 .vertical-chart-x-label {
@@ -750,10 +747,9 @@
   top: -80px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--bg-sidebar);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--primary);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), var(--inset-shadow);
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border-radius: 8px;
   padding: 10px 14px;
   z-index: 100;
@@ -843,7 +839,7 @@
     margin-left: 0 !important;
     margin-top: 15px !important;
     padding-top: 15px !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-top: 1px solid var(--border-color) !important;
     justify-content: space-between !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
