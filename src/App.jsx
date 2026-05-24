@@ -87,6 +87,13 @@ export default function App() {
   
   // Navigation active tab
   const [activeTab, setActiveTab] = useState('projects'); 
+  // Mobile responsive menu state
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleNavClick = (tab) => {
+    setActiveTab(tab);
+    setMobileMenuOpen(false);
+  };
   
   // Collapsed/Expanded projects state (key: project ID, val: boolean)
   const [expandedProjects, setExpandedProjects] = useState({ 1: true });
@@ -567,27 +574,52 @@ export default function App() {
 
   return (
     <div className="app-container">
+      {/* Mobile Top Header Bar (Only visible on screens <= 900px) */}
+      <div className="mobile-top-bar">
+        <button className="hamburger-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          <span className="hamburger-line"></span>
+          <span className="hamburger-line"></span>
+          <span className="hamburger-line"></span>
+        </button>
+        <div className="logo-section" style={{ margin: 0, border: 'none', padding: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="logo-icon" style={{ width: '30px', height: '30px', fontSize: '1rem' }}>T</div>
+          <div className="logo-text" style={{ fontSize: '1.15rem' }}>Trans-Helper</div>
+        </div>
+        <div style={{ width: '24px' }}></div> {/* Spacer for symmetry */}
+      </div>
+
+      {/* Mobile Sidebar Backdrop Overlay */}
+      {mobileMenuOpen && (
+        <div className="sidebar-backdrop" onClick={() => setMobileMenuOpen(false)}></div>
+      )}
+
       {/* Sidebar Navigation */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
         <div>
-          <div className="logo-section">
-            <div className="logo-icon">T</div>
-            <div className="logo-text">Trans-Helper</div>
+          <div className="logo-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div className="logo-icon">T</div>
+              <div className="logo-text">Trans-Helper</div>
+            </div>
+            {/* Close button for mobile menu */}
+            <button className="close-btn mobile-only" onClick={() => setMobileMenuOpen(false)} style={{ display: 'none', background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '1.8rem', cursor: 'pointer', padding: '0 5px', lineHeight: 1 }}>
+              ×
+            </button>
           </div>
           
           <nav className="nav-menu">
             {isAdmin && (
               <>
-                <div className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
+                <div className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => handleNavClick('dashboard')}>
                   📊 종합 대시보드
                 </div>
-                <div className={`nav-item ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => setActiveTab('projects')}>
+                <div className={`nav-item ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => handleNavClick('projects')}>
                   📂 프로젝트 모니터링
                 </div>
-                <div className={`nav-item ${activeTab === 'settlement' ? 'active' : ''}`} onClick={() => setActiveTab('settlement')}>
+                <div className={`nav-item ${activeTab === 'settlement' ? 'active' : ''}`} onClick={() => handleNavClick('settlement')}>
                   💰 전체 정산 마스터
                 </div>
-                <div className={`nav-item ${activeTab === 'accounts' ? 'active' : ''}`} onClick={() => setActiveTab('accounts')}>
+                <div className={`nav-item ${activeTab === 'accounts' ? 'active' : ''}`} onClick={() => handleNavClick('accounts')}>
                   👨‍💼 계정 관리
                 </div>
               </>
@@ -595,10 +627,10 @@ export default function App() {
             
             {isPIC && (
               <>
-                <div className={`nav-item ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => setActiveTab('projects')}>
+                <div className={`nav-item ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => handleNavClick('projects')}>
                   📂 내 프로젝트
                 </div>
-                <div className={`nav-item ${activeTab === 'scripters' ? 'active' : ''}`} onClick={() => setActiveTab('scripters')}>
+                <div className={`nav-item ${activeTab === 'scripters' ? 'active' : ''}`} onClick={() => handleNavClick('scripters')}>
                   👥 스크립터 현황
                 </div>
               </>
@@ -606,10 +638,10 @@ export default function App() {
             
             {isWorker && (
               <>
-                <div className={`nav-item ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => setActiveTab('projects')}>
+                <div className={`nav-item ${activeTab === 'projects' ? 'active' : ''}`} onClick={() => handleNavClick('projects')}>
                   📋 내 배정 작업
                 </div>
-                <div className={`nav-item ${activeTab === 'settlement' ? 'active' : ''}`} onClick={() => setActiveTab('settlement')}>
+                <div className={`nav-item ${activeTab === 'settlement' ? 'active' : ''}`} onClick={() => handleNavClick('settlement')}>
                   💳 정산 및 실적
                 </div>
               </>
