@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import { calculateSettlement } from './utils/billing.js';
+import logoImage from '../logo_image.png';
+import logoCompanyName from '../logo_compayname.png';
 
 // Pre-populated Mock Database (Expanded to support multiple months and years)
 const INITIAL_USERS = [
@@ -290,6 +292,11 @@ export default function App() {
   const [selectedScripterDetail, setSelectedScripterDetail] = useState(null);
   const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
 
+  // Admin account editing state
+  const [editingUser, setEditingUser] = useState(null);
+  // Admin dashboard chart view type: 'bar' | 'line' | 'combined'
+  const [chartViewType, setChartViewType] = useState('combined');
+
   // Form states
   const [newProject, setNewProject] = useState({ projectNo: '', name: '', field: 'IT', totalTasksCount: 1 });
   const [newScripter, setNewScripter] = useState({ name: '', email: '', contact: '', scripterId: '', canFgd: true, canInterview: true, specialty: 'GENERAL' });
@@ -547,6 +554,30 @@ export default function App() {
     }
   };
 
+  // Save Edited Account Details
+  const handleSaveEditedUser = (e) => {
+    e.preventDefault();
+    if (editingUser.role === 'WORKER') {
+      if (!editingUser.name || !editingUser.scripterId) {
+        return alert('스크립터 이름과 ID를 입력해주세요.');
+      }
+      editingUser.username = `worker_${editingUser.scripterId}`;
+    } else {
+      if (!editingUser.name || !editingUser.username) {
+        return alert('담당자 이름과 아이디를 입력해주세요.');
+      }
+    }
+
+    setUsers(users.map(u => u.id === editingUser.id ? editingUser : u));
+    
+    // Sync current logged in user metadata
+    if (currentUser && currentUser.id === editingUser.id) {
+      setCurrentUser(editingUser);
+    }
+    
+    setEditingUser(null);
+  };
+
   // Excel (CSV) Download Helper (Sum Row included)
   const downloadExcel = (data, filename, totalCostSum = null) => {
     const csvRows = [];
@@ -727,16 +758,32 @@ export default function App() {
   const monthlyChartData = getMonthlyChartData(selectedChartYear);
   const maxProjInAnyMonth = Math.max(...monthlyChartData.map(d => d.projCount), 1);
 
+  // SVG Chart scale calculations
+  const maxProj = Math.max(...monthlyChartData.map(d => d.projCount), 1);
+  const maxCost = Math.max(...monthlyChartData.map(d => d.totalCost), 10000);
+  
+  // Clean project limit (multiple of 4)
+  const maxProjLimit = Math.max(Math.ceil(maxProj / 4) * 4, 4);
+  
+  // Clean cost limit (multiple of 4, clean steps)
+  const rawCostInterval = maxCost / 4;
+  const costMagnitude = Math.pow(10, Math.max(Math.floor(Math.log10(rawCostInterval)), 3));
+  const roundedCostInterval = Math.ceil(rawCostInterval / costMagnitude) * costMagnitude;
+  const maxCostLimit = roundedCostInterval * 4;
+
   // LOGIN SCREEN
   if (!isLoggedIn) {
     return (
       <div className="login-overlay">
         <div className="glass-card login-card animated-fade-in">
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-            <div className="logo-icon" style={{ width: '48px', height: '48px', fontSize: '1.5rem' }}>T</div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <img src={logoImage} alt="한국리서치 로고" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
+              <img src={logoCompanyName} alt="한국리서치" style={{ height: '22px', width: 'auto', objectFit: 'contain' }} />
+            </div>
           </div>
           <h1 className="login-title">Trans-Helper</h1>
-          <p className="login-subtitle">한국리서치 녹취 배정 및 자동 정산 포털</p>
+          <p className="login-subtitle">녹취 배정 및 자동 정산 포털</p>
           
           <form onSubmit={handleLogin}>
             <div className="form-group">
@@ -788,7 +835,7 @@ export default function App() {
           <span className="hamburger-line"></span>
         </button>
         <div className="logo-section" style={{ margin: 0, border: 'none', padding: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div className="logo-icon" style={{ width: '30px', height: '30px', fontSize: '1rem' }}>T</div>
+          <img src={logoImage} alt="한국리서치 로고" style={{ height: '24px', width: 'auto', objectFit: 'contain' }} />
           <div className="logo-text" style={{ fontSize: '1.15rem' }}>Trans-Helper</div>
         </div>
         <div style={{ width: '24px' }}></div> {/* Spacer for symmetry */}
@@ -802,10 +849,13 @@ export default function App() {
       {/* Sidebar Navigation */}
       <aside className={`sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
         <div>
-          <div className="logo-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div className="logo-icon">T</div>
-              <div className="logo-text">Trans-Helper</div>
+          <div className="logo-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <img src={logoImage} alt="한국리서치 로고" style={{ height: '24px', width: 'auto', objectFit: 'contain' }} />
+                <img src={logoCompanyName} alt="한국리서치" style={{ height: '14px', width: 'auto', objectFit: 'contain' }} />
+              </div>
+              <div className="logo-text" style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-main)' }}>Trans-Helper</div>
             </div>
             {/* Close button for mobile menu */}
             <button className="close-btn mobile-only" onClick={() => setMobileMenuOpen(false)} style={{ display: 'none', background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '1.8rem', cursor: 'pointer', padding: '0 5px', lineHeight: 1 }}>
@@ -984,59 +1034,267 @@ export default function App() {
         {isAdmin && activeTab === 'dashboard' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }} className="animated-fade-in">
             
-            {/* 1. Monthly cumulative projects vertical bar chart (Requirement #2: Stats Widget on the Right) */}
+            {/* 1. Monthly cumulative projects vertical bar / line / combined chart */}
             <div className="glass-card card-padding">
               <div className="section-title">
-                <h2>📈 월별 누적 프로젝트 현황 (연단위 조회)</h2>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span className="form-label" style={{ margin: 0 }}>연도 선택:</span>
-                  <select className="form-select" style={{ padding: '6px 12px', fontSize: '0.85rem' }} value={selectedChartYear} onChange={(e) => setSelectedChartYear(Number(e.target.value))}>
-                    <option value="2026">2026년</option>
-                    <option value="2025">2025년</option>
-                  </select>
+                <h2>📈 월별 누적 프로젝트 및 정산 현황</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
+                  {/* Chart Type Toggle Buttons */}
+                  <div style={{ display: 'flex', gap: '4px', background: 'rgba(0,0,0,0.03)', padding: '4px', borderRadius: '8px' }}>
+                    <button 
+                      type="button"
+                      className="btn"
+                      style={{ 
+                        padding: '4px 10px', 
+                        fontSize: '0.8rem', 
+                        minHeight: 'auto',
+                        background: chartViewType === 'bar' ? 'var(--primary)' : 'transparent', 
+                        color: chartViewType === 'bar' ? '#ffffff' : 'var(--text-muted)',
+                        boxShadow: 'none'
+                      }}
+                      onClick={() => setChartViewType('bar')}
+                    >
+                      막대 (프로젝트)
+                    </button>
+                    <button 
+                      type="button"
+                      className="btn"
+                      style={{ 
+                        padding: '4px 10px', 
+                        fontSize: '0.8rem', 
+                        minHeight: 'auto',
+                        background: chartViewType === 'line' ? 'var(--secondary)' : 'transparent', 
+                        color: chartViewType === 'line' ? '#ffffff' : 'var(--text-muted)',
+                        boxShadow: 'none'
+                      }}
+                      onClick={() => setChartViewType('line')}
+                    >
+                      꺾은선 (작업비용)
+                    </button>
+                    <button 
+                      type="button"
+                      className="btn"
+                      style={{ 
+                        padding: '4px 10px', 
+                        fontSize: '0.8rem', 
+                        minHeight: 'auto',
+                        background: chartViewType === 'combined' ? 'linear-gradient(135deg, var(--primary), var(--secondary))' : 'transparent', 
+                        color: chartViewType === 'combined' ? '#ffffff' : 'var(--text-muted)',
+                        boxShadow: 'none'
+                      }}
+                      onClick={() => setChartViewType('combined')}
+                    >
+                      혼합 (프로젝트+비용)
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="form-label" style={{ margin: 0, fontSize: '0.85rem' }}>연도:</span>
+                    <select className="form-select" style={{ padding: '6px 12px', fontSize: '0.85rem' }} value={selectedChartYear} onChange={(e) => setSelectedChartYear(Number(e.target.value))}>
+                      <option value="2026">2026년</option>
+                      <option value="2025">2025년</option>
+                    </select>
+                  </div>
                 </div>
               </div>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '20px' }}>
-                해당 월 막대에 마우스를 갖다 대면 [등록 프로젝트 수, 작업 완료 건수, 총 정산 비용] 요약이 출력됩니다.
+                마우스를 갖다 대면 [등록 프로젝트 수, 작업 완료 건수, 총 정산 비용] 요약이 출력됩니다.
               </p>
+
+              {/* Chart Legend */}
+              <div style={{ display: 'flex', gap: '20px', fontSize: '0.85rem', marginBottom: '20px', justifyContent: 'flex-start', paddingLeft: '50px', flexWrap: 'wrap' }}>
+                {(chartViewType === 'bar' || chartViewType === 'combined') && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ display: 'inline-block', width: '12px', height: '12px', background: 'var(--primary)', borderRadius: '3px', opacity: 0.85 }}></span>
+                    <span style={{ fontWeight: '500', color: 'var(--text-main)' }}>프로젝트 건수 (왼쪽 축, 건)</span>
+                  </div>
+                )}
+                {(chartViewType === 'line' || chartViewType === 'combined') && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ display: 'inline-block', width: '16px', height: '3px', background: 'var(--secondary)', borderRadius: '1.5px' }}></span>
+                    <span style={{ display: 'inline-block', width: '8px', height: '8px', background: '#ffffff', border: '2px solid var(--secondary)', borderRadius: '50%', marginLeft: '-12px' }}></span>
+                    <span style={{ fontWeight: '500', color: 'var(--text-main)' }}>{chartViewType === 'line' ? '작업 비용 (원)' : '작업 비용 (오른쪽 축, 원)'}</span>
+                  </div>
+                )}
+              </div>
 
               {/* Flex Grid grouping the vertical chart (left) and the annual summary stats box (right) */}
               <div className="dashboard-chart-grid" style={{ alignItems: 'center' }}>
-                {/* Left: Vertical Chart */}
-                <div className="vertical-chart-wrapper">
-                  {monthlyChartData.map((d, index) => {
-                    const percentage = d.projCount > 0 ? (d.projCount / maxProjInAnyMonth) * 100 : 0;
-                    return (
-                      <div key={d.month} className="vertical-chart-bar-col">
-                        {/* Tooltip display when hovered */}
-                        {hoveredBarIndex === index && (
-                          <div className="chart-tooltip-box">
-                            <div className="chart-tooltip-title">{selectedChartYear}년 {d.month}월 실적</div>
-                            <div className="chart-tooltip-row">
-                              <span>등록 프로젝트:</span>
-                              <span className="chart-tooltip-value">{d.projCount}건</span>
-                            </div>
-                            <div className="chart-tooltip-row">
-                              <span>완료 작업량:</span>
-                              <span className="chart-tooltip-value">{d.completedCount}건</span>
-                            </div>
-                            <div className="chart-tooltip-row">
-                              <span>총 정산비용:</span>
-                              <span className="chart-tooltip-value">₩{d.totalCost.toLocaleString()}</span>
-                            </div>
-                          </div>
-                        )}
+                {/* Left: SVG Chart Container */}
+                <div style={{ position: 'relative', width: '100%', minHeight: '280px' }}>
+                  <svg viewBox="0 0 720 280" width="100%" height="280" style={{ overflow: 'visible' }}>
+                    {/* Grid lines & Y Axis Labels */}
+                    {Array.from({ length: 5 }).map((_, idx) => {
+                      const yVal = 245 - idx * 55;
+                      const formattedCost = idx === 0 ? '₩0' : `₩${Math.round((maxCostLimit / 4) * idx / 10000)}만`;
+                      return (
+                        <g key={idx}>
+                          <line 
+                            x1="50" 
+                            y1={yVal} 
+                            x2="655" 
+                            y2={yVal} 
+                            stroke="var(--border-color)" 
+                            strokeDasharray={idx === 0 ? "none" : "4 4"} 
+                            strokeWidth={1} 
+                          />
+                          {/* Left Y-axis label */}
+                          {chartViewType === 'line' ? (
+                            <text x="40" y={yVal + 4} textAnchor="end" fontSize="10" fill="var(--text-muted)" fontWeight="600">
+                              {formattedCost}
+                            </text>
+                          ) : (
+                            <text x="40" y={yVal + 4} textAnchor="end" fontSize="10" fill="var(--text-muted)" fontWeight="600">
+                              {Math.round((maxProjLimit / 4) * idx)}
+                            </text>
+                          )}
+                          {/* Right Y-axis label (only in combined mode) */}
+                          {chartViewType === 'combined' && (
+                            <text x="665" y={yVal + 4} textAnchor="start" fontSize="10" fill="var(--text-muted)" fontWeight="600">
+                              {formattedCost}
+                            </text>
+                          )}
+                        </g>
+                      );
+                    })}
 
-                        <div className="vertical-chart-bar-bg" onMouseEnter={() => setHoveredBarIndex(index)} onMouseLeave={() => setHoveredBarIndex(null)}>
-                          <div className={`vertical-chart-bar-fill ${d.projCount > 0 ? 'active' : ''}`} style={{ height: `${percentage || 2}%` }}></div>
+                    {/* X Axis Labels */}
+                    {monthlyChartData.map((d, i) => {
+                      const x = 50 + i * 55;
+                      return (
+                        <text key={i} x={x} y="268" textAnchor="middle" fontSize="11" fill="var(--text-muted)" fontWeight="600">
+                          {d.month}월
+                        </text>
+                      );
+                    })}
+
+                    {/* Hover vertical guidelines */}
+                    {hoveredBarIndex !== null && (
+                      <line
+                        x1={50 + hoveredBarIndex * 55}
+                        y1="25"
+                        x2={50 + hoveredBarIndex * 55}
+                        y2="245"
+                        stroke="var(--secondary)"
+                        strokeWidth={1}
+                        strokeDasharray="2 2"
+                        opacity={0.6}
+                      />
+                    )}
+
+                    {/* Bars for Project count */}
+                    {(chartViewType === 'bar' || chartViewType === 'combined') && 
+                      monthlyChartData.map((d, i) => {
+                        const x = 50 + i * 55;
+                        const yProj = 245 - (d.projCount / maxProjLimit) * 220;
+                        const barHeight = 245 - yProj;
+                        if (barHeight <= 0) return null;
+                        return (
+                          <rect
+                            key={i}
+                            x={x - 12}
+                            y={yProj}
+                            width={24}
+                            height={barHeight}
+                            fill="var(--primary)"
+                            opacity={hoveredBarIndex === i ? 1 : 0.85}
+                            rx={3}
+                            style={{ transition: 'all 0.25s ease' }}
+                          />
+                        );
+                      })
+                    }
+
+                    {/* Line & Dots for cost */}
+                    {(chartViewType === 'line' || chartViewType === 'combined') && (() => {
+                      const linePoints = monthlyChartData.map((d, i) => {
+                        const x = 50 + i * 55;
+                        const yCost = 245 - (d.totalCost / maxCostLimit) * 220;
+                        return { x, y: yCost };
+                      });
+                      const pathD = linePoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+
+                      return (
+                        <g>
+                          <path
+                            d={pathD}
+                            fill="none"
+                            stroke="var(--secondary)"
+                            strokeWidth={3}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{ transition: 'all 0.25s ease' }}
+                          />
+                          {linePoints.map((p, i) => (
+                            <circle
+                              key={i}
+                              cx={p.x}
+                              cy={p.y}
+                              r={hoveredBarIndex === i ? 6 : 4}
+                              fill="#ffffff"
+                              stroke="var(--secondary)"
+                              strokeWidth={3}
+                              style={{ transition: 'all 0.25s ease', cursor: 'pointer' }}
+                            />
+                          ))}
+                        </g>
+                      );
+                    })()}
+
+                    {/* Interactive overlay rects for hover detection */}
+                    {monthlyChartData.map((d, i) => {
+                      const x = 50 + i * 55;
+                      return (
+                        <rect
+                          key={i}
+                          x={x - 27}
+                          y={20}
+                          width={54}
+                          height={235}
+                          fill="transparent"
+                          style={{ cursor: 'pointer' }}
+                          onMouseEnter={() => setHoveredBarIndex(i)}
+                          onMouseLeave={() => setHoveredBarIndex(null)}
+                        />
+                      );
+                    })}
+                  </svg>
+
+                  {/* Tooltip Popup */}
+                  {hoveredBarIndex !== null && (() => {
+                    const d = monthlyChartData[hoveredBarIndex];
+                    const x = 50 + hoveredBarIndex * 55;
+                    return (
+                      <div 
+                        className="chart-tooltip-box" 
+                        style={{ 
+                          position: 'absolute', 
+                          top: '-80px', 
+                          left: `${x}px`, 
+                          transform: 'translateX(-50%)',
+                          zIndex: 10,
+                          pointerEvents: 'none'
+                        }}
+                      >
+                        <div className="chart-tooltip-title">{selectedChartYear}년 {d.month}월 실적</div>
+                        <div className="chart-tooltip-row">
+                          <span>등록 프로젝트:</span>
+                          <span className="chart-tooltip-value">{d.projCount}건</span>
                         </div>
-                        <div className="vertical-chart-x-label">{d.month}월</div>
+                        <div className="chart-tooltip-row">
+                          <span>완료 작업량:</span>
+                          <span className="chart-tooltip-value">{d.completedCount}건</span>
+                        </div>
+                        <div className="chart-tooltip-row">
+                          <span>총 정산비용:</span>
+                          <span className="chart-tooltip-value">₩{d.totalCost.toLocaleString()}</span>
+                        </div>
                       </div>
                     );
-                  })}
+                  })()}
                 </div>
 
-                {/* Right: Annual stats widget (Requirement #2) */}
+                {/* Right: Annual stats widget */}
                 <div className="summary-widget" style={{ padding: '20px', height: 'fit-content' }}>
                   <h3 style={{ fontSize: '0.95rem', color: 'var(--text-muted)', marginBottom: '15px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
                     🗓️ {selectedChartYear}년 누적 요약
@@ -1234,11 +1492,16 @@ export default function App() {
                           </td>
                           <td><code>{u.username}</code></td>
                           <td>
-                            {u.id !== currentUser.id && u.role !== 'ADMIN' && (
-                              <button className="btn btn-danger" style={{ padding: '4px 8px', fontSize: '0.8rem' }} onClick={() => handleDeleteUser(u.id)}>
-                                삭제
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '0.8rem' }} onClick={() => setEditingUser({ ...u })}>
+                                수정
                               </button>
-                            )}
+                              {u.id !== currentUser.id && u.role !== 'ADMIN' && (
+                                <button className="btn btn-danger" style={{ padding: '4px 8px', fontSize: '0.8rem' }} onClick={() => handleDeleteUser(u.id)}>
+                                  삭제
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -1271,9 +1534,14 @@ export default function App() {
                             </span>
                           </td>
                           <td>
-                            <button className="btn btn-danger" style={{ padding: '4px 8px', fontSize: '0.8rem' }} onClick={() => handleDeleteUser(u.id)}>
-                              삭제
-                            </button>
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '0.8rem' }} onClick={() => setEditingUser({ ...u })}>
+                                수정
+                              </button>
+                              <button className="btn btn-danger" style={{ padding: '4px 8px', fontSize: '0.8rem' }} onClick={() => handleDeleteUser(u.id)}>
+                                삭제
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -2139,6 +2407,142 @@ export default function App() {
               <div className="modal-footer">
                 <button className="btn btn-outline" type="button" onClick={() => setShowFeedbackModal(false)}>취소</button>
                 <button className="btn btn-primary" type="submit">전송하기</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ----------------- [MODAL: ACCOUNT EDIT POPUP] ----------------- */}
+      {editingUser && (
+        <div className="modal-overlay">
+          <div className="glass-card modal-content" style={{ maxWidth: '450px', width: '90%' }}>
+            <div className="modal-header">
+              <h3>✏️ 계정 정보 수정</h3>
+              <button className="close-btn" onClick={() => setEditingUser(null)}>&times;</button>
+            </div>
+            <form onSubmit={handleSaveEditedUser}>
+              <div className="modal-body">
+                {editingUser.role === 'WORKER' ? (
+                  <>
+                    <div className="form-group">
+                      <label className="form-label">스크립터명</label>
+                      <input 
+                        className="form-input" 
+                        type="text" 
+                        value={editingUser.name} 
+                        onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })} 
+                        required 
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">고유 ID (숫자)</label>
+                      <input 
+                        className="form-input" 
+                        type="text" 
+                        value={editingUser.scripterId} 
+                        onChange={(e) => setEditingUser({ ...editingUser, scripterId: e.target.value })} 
+                        required 
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">연락처</label>
+                      <input 
+                        className="form-input" 
+                        type="text" 
+                        value={editingUser.contact || ''} 
+                        onChange={(e) => setEditingUser({ ...editingUser, contact: e.target.value })} 
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">이메일</label>
+                      <input 
+                        className="form-input" 
+                        type="email" 
+                        value={editingUser.email || ''} 
+                        onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })} 
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">전문성 비고</label>
+                      <select 
+                        className="form-select" 
+                        value={editingUser.specialty || 'GENERAL'} 
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const specialtyText = val === 'FGD_ONLY' ? '좌담회 전용' : val === 'MEDICAL' ? '의학 조사 주선' : val === 'INTERVIEW' ? '인터뷰 위주' : '일반';
+                          setEditingUser({ ...editingUser, specialty: val, specialtyText });
+                        }}
+                      >
+                        <option value="GENERAL">일반</option>
+                        <option value="FGD_ONLY">좌담회 전용 (인터뷰 제외)</option>
+                        <option value="MEDICAL">의학 조사 전문</option>
+                        <option value="INTERVIEW">인터뷰 위주</option>
+                      </select>
+                    </div>
+                    <div style={{ display: 'flex', gap: '20px', margin: '15px 0' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={editingUser.canFgd || false} 
+                          onChange={(e) => setEditingUser({ ...editingUser, canFgd: e.target.checked })} 
+                        /> 좌담회 가능
+                      </label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={editingUser.canInterview || false} 
+                          onChange={(e) => setEditingUser({ ...editingUser, canInterview: e.target.checked })} 
+                        /> 인터뷰 가능
+                      </label>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="form-group">
+                      <label className="form-label">담당자 이름</label>
+                      <input 
+                        className="form-input" 
+                        type="text" 
+                        value={editingUser.name} 
+                        onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })} 
+                        required 
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">접속 ID</label>
+                      <input 
+                        className="form-input" 
+                        type="text" 
+                        value={editingUser.username} 
+                        onChange={(e) => setEditingUser({ ...editingUser, username: e.target.value })} 
+                        required 
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">연락처</label>
+                      <input 
+                        className="form-input" 
+                        type="text" 
+                        value={editingUser.contact || ''} 
+                        onChange={(e) => setEditingUser({ ...editingUser, contact: e.target.value })} 
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">이메일</label>
+                      <input 
+                        className="form-input" 
+                        type="email" 
+                        value={editingUser.email || ''} 
+                        onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })} 
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="modal-footer">
+                <button className="btn btn-outline" type="button" onClick={() => setEditingUser(null)}>취소</button>
+                <button className="btn btn-primary" type="submit">저장하기</button>
               </div>
             </form>
           </div>
