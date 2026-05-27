@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trans-Helper 서비스 사용자 설명서</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: hsl(250, 84%, 58%);
+      --secondary: hsl(190, 90%, 38%);
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --bg-main: #f3f4f6;
+      --bg-card: #ffffff;
+      --border-color: #e5e7eb;
+      --success: #10b981;
+      --info-bg: #eff6ff;
+      --info-border: #bfdbfe;
+      --info-text: #1e40af;
+      --tip-bg: #ecfdf5;
+      --tip-border: #a7f3d0;
+      --tip-text: #065f46;
+      --important-bg: #fffbeb;
+      --important-border: #fde68a;
+      --important-text: #92400e;
+    }
+    body {
+      font-family: 'Noto Sans KR', 'Inter', sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg-main);
+      line-height: 1.7;
+      margin: 0;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 850px;
+      margin: 0 auto;
+      background: var(--bg-card);
+      padding: 50px 60px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--border-color);
+    }
+    h1 {
+      font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #111827;
+      margin-top: 0;
+      margin-bottom: 8px;
+      border-bottom: 2.5px solid var(--primary);
+      padding-bottom: 18px;
+      letter-spacing: -0.5px;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      margin-bottom: 35px;
+    }
+    h2 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: #111827;
+      margin-top: 45px;
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+      border-bottom: 1.5px solid var(--border-color);
+    }
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin-top: 25px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    p {
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 0.98rem;
+    }
+    ul, ol {
+      margin-top: 0;
+      margin-bottom: 20px;
+      padding-left: 22px;
+    }
+    li {
+      margin-bottom: 8px;
+      font-size: 0.98rem;
+    }
+    strong {
+      color: #111827;
+      font-weight: 600;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      margin-bottom: 30px;
+      font-size: 0.92rem;
+    }
+    th, td {
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+    th {
+      background-color: #f9fafb;
+      font-weight: 600;
+      color: #374151;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .badge-admin { background-color: #e0e7ff; color: #3730a3; }
+    .badge-pic { background-color: #ecfeff; color: #155e75; }
+    .badge-worker { background-color: #f0fdf4; color: #166534; }
+    
+    /* Alert styles */
+    .alert {
+      padding: 16px 20px;
+      border-left: 4px solid;
+      border-radius: 4px;
+      margin-bottom: 25px;
+      font-size: 0.95rem;
+    }
+    .alert-note {
+      background-color: var(--info-bg);
+      border-color: var(--info-border);
+      color: var(--info-text);
+    }
+    .alert-tip {
+      background-color: var(--tip-bg);
+      border-color: var(--tip-border);
+      color: var(--tip-text);
+    }
+    .alert-important {
+      background-color: var(--important-bg);
+      border-color: var(--important-border);
+      color: var(--important-text);
+    }
+    .alert p:last-child {
+      margin-bottom: 0;
+    }
+    
+    /* Image styles */
+    .img-container {
+      text-align: center;
+      margin: 35px 0;
+      page-break-inside: avoid;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      border: 1px solid var(--border-color);
+    }
+    .img-caption {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 10px;
+      font-weight: 500;
+    }
+    
+    /* Print prompt banner (visible on screen only) */
+    .print-banner {
+      background-color: #fffbeb;
+      border: 1px solid #fef3c7;
+      color: #92400e;
+      padding: 15px 22px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.92rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+    .print-btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background-color 0.2s ease;
+      box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+    }
+    .print-btn:hover {
+      background-color: #4f46e5;
+    }
+    
+    @media print {
+      body {
+        background-color: #ffffff;
+        padding: 0;
+      }
+      .container {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        max-width: 100%;
+      }
+      .print-banner {
+        display: none;
+      }
+      img {
+        box-shadow: none;
+        border: 1px solid #d1d5db;
+        max-height: 450px;
+        object-fit: contain;
+      }
+      .img-container {
+        page-break-inside: avoid;
+      }
+      h1, h2, h3, tr, table, p, ul, ol {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+
+    <h1>Trans-Helper 서비스 사용자 설명서</h1>
+    <div class="subtitle">한국리서치 녹취 배정 및 자동 정산 포털 이용 안내 가이드</div>
+
+    <p>안녕하세요! <strong>Trans-Helper</strong> 서비스 이용자 여러분. 본 설명서는 한국리서치 녹취 배정 및 자동 정산 시스템인 <strong>Trans-Helper</strong>가 무엇인지 이해하고, 나의 역할(담당 PM / 스크립터)에 맞춰 서비스를 어떻게 손쉽게 이용할 수 있는지 안내해 드리는 사용자 매뉴얼입니다.</p>
+
+    <h2>1. Trans-Helper 서비스란?</h2>
+    <p><strong>Trans-Helper</strong>는 한국리서치의 녹취 및 스크립터 업무의 비효율을 획기적으로 개선하기 위해 구축된 <strong>스마트 업무 배정 및 자동 정산 서비스</strong>입니다.</p>
+    <ul>
+      <li><strong>업무 배정 자동화:</strong> 담당 PM이 프로젝트를 등록하면, 스크립터들의 현재 업무량과 전문 분야(좌담회 전문, 인터뷰 전문 등)를 고려하여 최적의 적임자를 추천 및 배정합니다.</li>
+      <li><strong>정산 자동화:</strong> 스크립터가 작업 완료 시간을 입력하면 시스템에서 공정한 정산 기준(15분 정산 룰)에 맞춰 정산 금액을 자동 계산하며, 번거로운 수작업 정산 처리를 없애줍니다.</li>
+      <li><strong>실시간 통계 및 투명성:</strong> 정산 비용과 프로젝트 현황이 실시간 통계 차트로 투명하게 시각화됩니다.</li>
+    </ul>
+
+    <h2>2. 역할별 서비스 사용 방법 (How to Use)</h2>
+    <p>시스템 로그인 후 왼쪽 하단에서 본인의 프로필과 역할을 확인하신 후 아래 가이드에 따라 서비스를 이용해 주세요.</p>
+
+    <h3>① 담당 PM (프로젝트 매니저) 사용 방법</h3>
+    <p>PM은 조사 설계에 맞춰 프로젝트를 생성하고, 스크립터에게 작업을 분배하며 정산을 마감합니다.</p>
+
+    <div class="img-container">
+      <img src="/Users/kimmanju/.gemini/antigravity/brain/f3e17e51-de89-4f1f-8fa1-54468e0ba450/media__1779841556114.png" alt="담당자 워크스페이스 화면">
+      <div class="img-caption">[그림 1] 담당자(PM) 워크스페이스 화면 및 세부 세션 배정·관리 인터페이스</div>
+    </div>
+
+    <ol>
+      <li><strong>프로젝트 등록:</strong> <strong>`프로젝트 모니터링`</strong> 메뉴에서 <strong>`+ 새 프로젝트 등록`</strong> 버튼을 누르고 프로젝트 번호, 조사명, 분야를 기입하여 프로젝트를 만듭니다.</li>
+      <li><strong>스크립터 배정:</strong> 생성된 프로젝트 아래의 세부 작업(좌담회/인터뷰)에서 <strong>`배정하기`</strong>를 클릭합니다. 추천 스크립터 목록에서 각 작업자의 현재 배정 건수(업무량)와 전문 분야를 확인하고 가장 적합한 작업자에게 배정합니다.</li>
+      <li><strong>모니터링 및 마감:</strong> 작업자가 녹취록 작성을 완료하면 진행률이 100%로 변경됩니다. 모든 세부 작업이 완료되면 <strong>`완료 처리`</strong> 버튼을 눌러 프로젝트를 종결합니다.</li>
+      <li><strong>월간 및 프로젝트별 정산 내역 확인:</strong> <strong>`전체 정산 마스터`</strong> 메뉴에서 월별 또는 특정 기간별로 지급해야 할 스크립터별 정산 금액과 산출 기준을 투명하게 조회하고 승인합니다. 특히 <strong>프로젝트별 세부 작업 수와 정산 세부 내역</strong>을 함께 확인하고 검토할 수 있습니다.</li>
+    </ol>
+
+    <h3>② 스크립터 (작업자) 사용 방법</h3>
+    <p>스크립터는 나에게 배정된 녹취 작업을 확인하고, 작업 시간 및 실적을 제출하여 정산을 요청합니다.</p>
+
+    <div class="img-container">
+      <img src="/Users/kimmanju/.gemini/antigravity/brain/f3e17e51-de89-4f1f-8fa1-54468e0ba450/media__1779841467744.png" alt="스크립터 워크스페이스 화면">
+      <div class="img-caption">[그림 2] 스크립터 대시보드 화면 및 참여 프로젝트 세션 진행 상태 조회</div>
+    </div>
+
+    <ol>
+      <li><strong>배정된 작업 확인:</strong> 로그인 후 <strong>`내 프로젝트`</strong> 메뉴로 이동하면 나에게 배정된 진행 중인 녹취 작업 리스트가 표시됩니다.</li>
+      <li><strong>작업 실적(시간) 등록:</strong> 작업을 완료한 뒤 <strong>`작업 완료/실적 입력`</strong> 버튼을 클릭합니다. 실제 작업에 소요된 시간을 분(Minute) 단위로 입력하고 완료본 문서(또는 텍스트)를 등록합니다.</li>
+      <li><strong>정산 금액 자동 산출:</strong> 입력한 시간은 시스템 정산 기준(15분 단위 올림/버림 룰)에 의해 <strong>'정산 시간'</strong>과 <strong>'산출 비용'</strong>으로 즉시 자동 환산되어 표에 나타납니다.</li>
+      <li><strong>월간 정산 현황 조회:</strong> <strong>`정산 및 실적`</strong> 메뉴에서 내가 이번 달에 누적으로 지급받을 총 정산 액수와 작업 히스토리를 확인하고 관리할 수 있습니다.</li>
+    </ol>
+
+    <h2>3. 알아두면 유용한 시스템 핵심 기능</h2>
+
+    <div class="alert alert-note">
+      <h3>⏱️ 공정한 '15분 정산 계산법' (Rounding Rule)</h3>
+      <p>작업 정산 시 발생하는 자잘한 분 단위 처리를 합리적으로 정돈하기 위해 시스템 내부적으로 <strong>15분 정산법</strong>이 작동합니다.</p>
+      <ul>
+        <li><strong>15분 미만 버림 (절하):</strong> 예를 들어 72분을 작업한 경우, 15분 단위로 내림되어 <strong>60분</strong>에 해당하는 비용(₩60,000)이 정산됩니다.</li>
+        <li><strong>15분 이상 올림 (절상):</strong> 78분을 작업한 경우, 15분 단위를 초과하는 시점이므로 <strong>90분</strong>에 해당하는 비용(₩70,000)으로 올림 정산됩니다.</li>
+      </ul>
+      <p>이 규칙은 정산 페이지의 상세 테이블에서 '입력 시간' 대비 '정산 시간'으로 시각화되어 제공됩니다.</p>
+    </div>
+
+    <h3>📊 다용도 통계 그래프 (어드민 전용)</h3>
+    <p>종합 대시보드에서는 연도별/월별 프로젝트 건수와 총 정산 비용의 추이를 다양한 레이아웃으로 감상하며 업무 추이를 검토할 수 있습니다.</p>
+
+    <div class="img-container">
+      <img src="/Users/kimmanju/.gemini/antigravity/brain/f3e17e51-de89-4f1f-8fa1-54468e0ba450/media__1779780865245.png" alt="어드민 메인 대시보드 및 통계 그래프">
+      <div class="img-caption">[그림 3] 어드민 관리자 메인 통계 대시보드 및 다목적 반응형 SVG 차트 화면</div>
+    </div>
+
+    <ul>
+      <li><strong>막대형 / 꺾은선형 / 혼합형</strong> 토글 버튼을 통해 원하는 시각화 스타일로 데이터 비교가 가능합니다.</li>
+      <li>마우스를 그래프 위에 올리면 수직 가이드선과 상세 툴팁이 생성되어 편리하게 월별 상세 수치를 읽을 수 있습니다.</li>
+    </ul>
+
+    <div class="alert alert-tip">
+      <h3>💬 익명 피드백 전송 기능</h3>
+      <p>시스템 이용 중 불편한 점이나 건의하고 싶은 아이디어가 있다면 좌측 하단의 <strong>`사용자 피드백 보내기`</strong> 버튼을 눌러 언제든 의견을 남기실 수 있습니다.</p>
+      <p>전송된 의견은 작성자의 실명이 완전히 가려진 채 <strong>'익명(직군)'</strong> 배지로만 관리자에게 수집되므로, 부담 없이 자유로운 의견 개진이 가능합니다.</p>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -3,6 +3,9 @@ import './App.css';
 import { calculateSettlement } from './utils/billing.js';
 import logoImage from '../logo_image.png';
 import logoCompanyName from '../logo_compayname.png';
+import guidePm from './assets/guide_pm.png';
+import guideWorker from './assets/guide_worker.png';
+import guideAdmin from './assets/guide_admin.png';
 
 // Pre-populated Mock Database (Expanded to support multiple months and years)
 const INITIAL_USERS = [
@@ -279,10 +282,11 @@ export default function App() {
 
   // User Feedback States
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showUserGuideModal, setShowUserGuideModal] = useState(false);
   const [feedbackContent, setFeedbackContent] = useState('');
   const [feedbacks, setFeedbacks] = useState([
-    { id: 1, senderName: '스크립터1', senderRole: 'WORKER', content: '녹취 파일이 업로드되었을 때 카카오톡 알림톡 기능이 추가되었으면 좋겠습니다.', createdAt: '2026-05-20 14:32' },
-    { id: 2, senderName: '김민정 PM', senderRole: 'PIC', content: '정산 비용 계산 시 소수점 버림 기준을 15분 단위로 깔끔하게 절상/절하하는 기능이 아주 편리합니다.', createdAt: '2026-05-22 10:15' }
+    { id: 1, senderName: '익명', senderRole: 'WORKER', content: '녹취 파일이 업로드되었을 때 카카오톡 알림톡 기능이 추가되었으면 좋겠습니다.', createdAt: '2026-05-20 14:32' },
+    { id: 2, senderName: '익명', senderRole: 'PIC', content: '정산 비용 계산 시 소수점 버림 기준을 15분 단위로 깔끔하게 절상/절하하는 기능이 아주 편리합니다.', createdAt: '2026-05-22 10:15' }
   ]);
 
   // Project Monitoring In Progress / Completed sub tab state
@@ -395,7 +399,7 @@ export default function App() {
     
     const newFeedback = {
       id: Date.now(),
-      senderName: currentUser.name,
+      senderName: '익명',
       senderRole: currentUser.role,
       content: feedbackContent.trim(),
       createdAt: new Date().toISOString().replace('T', ' ').substring(0, 16)
@@ -779,7 +783,7 @@ export default function App() {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px', gap: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <img src={logoImage} alt="한국리서치 로고" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
-              <img src={logoCompanyName} alt="한국리서치" style={{ height: '22px', width: 'auto', objectFit: 'contain' }} />
+              <img src={logoCompanyName} alt="한국리서치" style={{ height: '33px', width: 'auto', objectFit: 'contain' }} />
             </div>
           </div>
           <h1 className="login-title">Trans-Helper</h1>
@@ -853,7 +857,7 @@ export default function App() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <img src={logoImage} alt="한국리서치 로고" style={{ height: '24px', width: 'auto', objectFit: 'contain' }} />
-                <img src={logoCompanyName} alt="한국리서치" style={{ height: '14px', width: 'auto', objectFit: 'contain' }} />
+                <img src={logoCompanyName} alt="한국리서치" style={{ height: '21px', width: 'auto', objectFit: 'contain' }} />
               </div>
               <div className="logo-text" style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-main)' }}>Trans-Helper</div>
             </div>
@@ -954,6 +958,31 @@ export default function App() {
             </button>
           </div>
         )}
+
+        {/* User Guide Button */}
+        <div style={{ padding: '0 20px', marginBottom: '15px', marginTop: '10px' }}>
+          <button 
+            className="btn btn-outline" 
+            style={{ 
+              width: '100%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '8px', 
+              padding: '10px', 
+              fontSize: '0.85rem',
+              background: 'transparent',
+              borderColor: 'var(--border-color)',
+              color: 'var(--text-color)',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: '500'
+            }}
+            onClick={() => setShowUserGuideModal(true)}
+          >
+            📖 서비스 사용안내서
+          </button>
+        </div>
       </aside>
 
       {/* Main Panel Content */}
@@ -1054,7 +1083,7 @@ export default function App() {
                       }}
                       onClick={() => setChartViewType('bar')}
                     >
-                      막대 (프로젝트)
+                      막대 그래프
                     </button>
                     <button 
                       type="button"
@@ -1069,7 +1098,7 @@ export default function App() {
                       }}
                       onClick={() => setChartViewType('line')}
                     >
-                      꺾은선 (작업비용)
+                      꺾은선 그래프
                     </button>
                     <button 
                       type="button"
@@ -1084,7 +1113,7 @@ export default function App() {
                       }}
                       onClick={() => setChartViewType('combined')}
                     >
-                      혼합 (프로젝트+비용)
+                      혼합 그래프
                     </button>
                   </div>
 
@@ -1103,19 +1132,28 @@ export default function App() {
 
               {/* Chart Legend */}
               <div style={{ display: 'flex', gap: '20px', fontSize: '0.85rem', marginBottom: '20px', justifyContent: 'flex-start', paddingLeft: '50px', flexWrap: 'wrap' }}>
-                {(chartViewType === 'bar' || chartViewType === 'combined') && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {chartViewType === 'line' ? (
+                    <>
+                      <span style={{ display: 'inline-block', width: '16px', height: '3px', background: 'var(--primary)', borderRadius: '1.5px' }}></span>
+                      <span style={{ display: 'inline-block', width: '8px', height: '8px', background: '#ffffff', border: '2px solid var(--primary)', borderRadius: '50%', marginLeft: '-12px' }}></span>
+                    </>
+                  ) : (
                     <span style={{ display: 'inline-block', width: '12px', height: '12px', background: 'var(--primary)', borderRadius: '3px', opacity: 0.85 }}></span>
-                    <span style={{ fontWeight: '500', color: 'var(--text-main)' }}>프로젝트 건수 (왼쪽 축, 건)</span>
-                  </div>
-                )}
-                {(chartViewType === 'line' || chartViewType === 'combined') && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ display: 'inline-block', width: '16px', height: '3px', background: 'var(--secondary)', borderRadius: '1.5px' }}></span>
-                    <span style={{ display: 'inline-block', width: '8px', height: '8px', background: '#ffffff', border: '2px solid var(--secondary)', borderRadius: '50%', marginLeft: '-12px' }}></span>
-                    <span style={{ fontWeight: '500', color: 'var(--text-main)' }}>{chartViewType === 'line' ? '작업 비용 (원)' : '작업 비용 (오른쪽 축, 원)'}</span>
-                  </div>
-                )}
+                  )}
+                  <span style={{ fontWeight: '500', color: 'var(--text-main)' }}>프로젝트 건수 (왼쪽 축, 건)</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {chartViewType === 'bar' ? (
+                    <span style={{ display: 'inline-block', width: '12px', height: '12px', background: 'var(--secondary)', borderRadius: '3px', opacity: 0.85 }}></span>
+                  ) : (
+                    <>
+                      <span style={{ display: 'inline-block', width: '16px', height: '3px', background: 'var(--secondary)', borderRadius: '1.5px' }}></span>
+                      <span style={{ display: 'inline-block', width: '8px', height: '8px', background: '#ffffff', border: '2px solid var(--secondary)', borderRadius: '50%', marginLeft: '-12px' }}></span>
+                    </>
+                  )}
+                  <span style={{ fontWeight: '500', color: 'var(--text-main)' }}>작업 비용 (오른쪽 축, 원)</span>
+                </div>
               </div>
 
               {/* Flex Grid grouping the vertical chart (left) and the annual summary stats box (right) */}
@@ -1138,22 +1176,14 @@ export default function App() {
                             strokeDasharray={idx === 0 ? "none" : "4 4"} 
                             strokeWidth={1} 
                           />
-                          {/* Left Y-axis label */}
-                          {chartViewType === 'line' ? (
-                            <text x="40" y={yVal + 4} textAnchor="end" fontSize="10" fill="var(--text-muted)" fontWeight="600">
-                              {formattedCost}
-                            </text>
-                          ) : (
-                            <text x="40" y={yVal + 4} textAnchor="end" fontSize="10" fill="var(--text-muted)" fontWeight="600">
-                              {Math.round((maxProjLimit / 4) * idx)}
-                            </text>
-                          )}
-                          {/* Right Y-axis label (only in combined mode) */}
-                          {chartViewType === 'combined' && (
-                            <text x="665" y={yVal + 4} textAnchor="start" fontSize="10" fill="var(--text-muted)" fontWeight="600">
-                              {formattedCost}
-                            </text>
-                          )}
+                          {/* Left Y-axis label (Always Project Count) */}
+                          <text x="40" y={yVal + 4} textAnchor="end" fontSize="10" fill="var(--text-muted)" fontWeight="600">
+                            {Math.round((maxProjLimit / 4) * idx)}
+                          </text>
+                          {/* Right Y-axis label (Always Cost) */}
+                          <text x="665" y={yVal + 4} textAnchor="start" fontSize="10" fill="var(--text-muted)" fontWeight="600">
+                            {formattedCost}
+                          </text>
                         </g>
                       );
                     })}
@@ -1182,8 +1212,51 @@ export default function App() {
                       />
                     )}
 
-                    {/* Bars for Project count */}
-                    {(chartViewType === 'bar' || chartViewType === 'combined') && 
+                    {/* Grouped Bars for Bar mode */}
+                    {chartViewType === 'bar' && 
+                      monthlyChartData.map((d, i) => {
+                        const x = 50 + i * 55;
+                        const yProj = 245 - (d.projCount / maxProjLimit) * 220;
+                        const barHeightProj = 245 - yProj;
+                        
+                        const yCost = 245 - (d.totalCost / maxCostLimit) * 220;
+                        const barHeightCost = 245 - yCost;
+                        
+                        return (
+                          <g key={i}>
+                            {/* Project Count Bar (Left) */}
+                            {barHeightProj > 0 && (
+                              <rect
+                                x={x - 13}
+                                y={yProj}
+                                width={11}
+                                height={barHeightProj}
+                                fill="var(--primary)"
+                                opacity={hoveredBarIndex === i ? 1 : 0.85}
+                                rx={2}
+                                style={{ transition: 'all 0.25s ease' }}
+                              />
+                            )}
+                            {/* Cost Bar (Right) */}
+                            {barHeightCost > 0 && (
+                              <rect
+                                x={x + 1}
+                                y={yCost}
+                                width={11}
+                                height={barHeightCost}
+                                fill="var(--secondary)"
+                                opacity={hoveredBarIndex === i ? 1 : 0.85}
+                                rx={2}
+                                style={{ transition: 'all 0.25s ease' }}
+                              />
+                            )}
+                          </g>
+                        );
+                      })
+                    }
+
+                    {/* Bars for Combined mode */}
+                    {chartViewType === 'combined' && 
                       monthlyChartData.map((d, i) => {
                         const x = 50 + i * 55;
                         const yProj = 245 - (d.projCount / maxProjLimit) * 220;
@@ -1205,8 +1278,75 @@ export default function App() {
                       })
                     }
 
-                    {/* Line & Dots for cost */}
-                    {(chartViewType === 'line' || chartViewType === 'combined') && (() => {
+                    {/* Lines & Dots for Line mode */}
+                    {chartViewType === 'line' && (() => {
+                      const projPoints = monthlyChartData.map((d, i) => {
+                        const x = 50 + i * 55;
+                        const yProj = 245 - (d.projCount / maxProjLimit) * 220;
+                        return { x, y: yProj };
+                      });
+                      const pathProjD = projPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+
+                      const costPoints = monthlyChartData.map((d, i) => {
+                        const x = 50 + i * 55;
+                        const yCost = 245 - (d.totalCost / maxCostLimit) * 220;
+                        return { x, y: yCost };
+                      });
+                      const pathCostD = costPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+
+                      return (
+                        <g>
+                          {/* Project Count Line (Indigo) */}
+                          <path
+                            d={pathProjD}
+                            fill="none"
+                            stroke="var(--primary)"
+                            strokeWidth={3}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{ transition: 'all 0.25s ease' }}
+                          />
+                          {projPoints.map((p, i) => (
+                            <circle
+                              key={`proj-${i}`}
+                              cx={p.x}
+                              cy={p.y}
+                              r={hoveredBarIndex === i ? 6 : 4}
+                              fill="#ffffff"
+                              stroke="var(--primary)"
+                              strokeWidth={3}
+                              style={{ transition: 'all 0.25s ease', cursor: 'pointer' }}
+                            />
+                          ))}
+
+                          {/* Cost Line (Teal) */}
+                          <path
+                            d={pathCostD}
+                            fill="none"
+                            stroke="var(--secondary)"
+                            strokeWidth={3}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{ transition: 'all 0.25s ease' }}
+                          />
+                          {costPoints.map((p, i) => (
+                            <circle
+                              key={`cost-${i}`}
+                              cx={p.x}
+                              cy={p.y}
+                              r={hoveredBarIndex === i ? 6 : 4}
+                              fill="#ffffff"
+                              stroke="var(--secondary)"
+                              strokeWidth={3}
+                              style={{ transition: 'all 0.25s ease', cursor: 'pointer' }}
+                            />
+                          ))}
+                        </g>
+                      );
+                    })()}
+
+                    {/* Cost Line & Dots for Combined mode */}
+                    {chartViewType === 'combined' && (() => {
                       const linePoints = monthlyChartData.map((d, i) => {
                         const x = 50 + i * 55;
                         const yCost = 245 - (d.totalCost / maxCostLimit) * 220;
@@ -2409,6 +2549,106 @@ export default function App() {
                 <button className="btn btn-primary" type="submit">전송하기</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ----------------- [MODAL: USER GUIDE POPUP] ----------------- */}
+      {showUserGuideModal && (
+        <div className="modal-overlay">
+          <div className="glass-card modal-content" style={{ maxWidth: '850px', width: '95%', maxHeight: '85vh', display: 'flex', flexDirection: 'column', padding: 0 }}>
+            <div className="modal-header" style={{ padding: '20px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0, fontSize: '1.25rem' }}>📖 Trans-Helper 서비스 사용설명서</h3>
+              <button className="close-btn" onClick={() => setShowUserGuideModal(false)} style={{ fontSize: '1.8rem', background: 'transparent', border: 'none', cursor: 'pointer' }}>&times;</button>
+            </div>
+            
+            <div className="modal-body" style={{ overflowY: 'auto', padding: '30px', fontSize: '0.95rem', lineHeight: '1.7', color: 'var(--text-main)', textAlign: 'left' }}>
+              
+              <div style={{ marginBottom: '25px' }}>
+                <p>안녕하세요! <strong>Trans-Helper</strong> 서비스 이용자 여러분. 본 설명서는 한국리서치 녹취 배정 및 자동 정산 시스템인 <strong>Trans-Helper</strong>가 무엇인지 이해하고, 나의 역할(담당 PM / 스크립터)에 맞춰 서비스를 어떻게 손쉽게 이용할 수 있는지 안내해 드리는 사용자 매뉴얼입니다.</p>
+              </div>
+
+              <section style={{ marginBottom: '35px' }}>
+                <h4 style={{ fontSize: '1.15rem', borderBottom: '2.5px solid var(--primary)', paddingBottom: '8px', marginBottom: '15px', color: '#111827', fontWeight: '700' }}>1. Trans-Helper 서비스란?</h4>
+                <p><strong>Trans-Helper</strong>는 한국리서치의 녹취 및 스크립터 업무의 비효율을 획기적으로 개선하기 위해 구축된 <strong>스마트 업무 배정 및 자동 정산 서비스</strong>입니다.</p>
+                <ul style={{ paddingLeft: '20px', marginBottom: '15px' }}>
+                  <li style={{ marginBottom: '8px' }}><strong>업무 배정 자동화:</strong> 담당 PM이 프로젝트를 등록하면, 스크립터들의 현재 업무량과 전문 분야(좌담회 전문, 인터뷰 전문 등)를 고려하여 최적의 적임자를 추천 및 배정합니다.</li>
+                  <li style={{ marginBottom: '8px' }}><strong>정산 자동화:</strong> 스크립터가 작업 완료 시간을 입력하면 시스템에서 공정한 정산 기준(15분 정산 룰)에 맞춰 정산 금액을 자동 계산하며, 번거로운 수작업 정산 처리를 없애줍니다.</li>
+                  <li style={{ marginBottom: '8px' }}><strong>실시간 통계 및 투명성:</strong> 정산 비용과 프로젝트 현황이 실시간 통계 차트로 투명하게 시각화됩니다.</li>
+                </ul>
+              </section>
+
+              <section style={{ marginBottom: '35px' }}>
+                <h4 style={{ fontSize: '1.15rem', borderBottom: '2.5px solid var(--primary)', paddingBottom: '8px', marginBottom: '15px', color: '#111827', fontWeight: '700' }}>2. 역할별 서비스 사용 방법</h4>
+                <p>시스템 로그인 후 왼쪽 하단에서 본인의 프로필과 역할을 확인하신 후 아래 가이드에 따라 서비스를 이용해 주세요.</p>
+                
+                <h5 style={{ fontSize: '1.05rem', margin: '20px 0 10px 0', color: 'var(--primary)', fontWeight: '600' }}>① 담당 PM (프로젝트 매니저) 사용 방법</h5>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: '10px' }}>PM은 조사 설계에 맞춰 프로젝트를 생성하고, 스크립터에게 작업을 분배하며 정산을 마감합니다.</p>
+                
+                <div style={{ textAlign: 'center', margin: '20px 0', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', background: '#f9fafb' }}>
+                  <img src={guidePm} alt="담당자 워크스페이스 화면" style={{ maxWidth: '100%', height: 'auto', borderRadius: '6px', border: '1px solid var(--border-color)' }} />
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '8px' }}>[그림 1] 담당자(PM) 워크스페이스 화면 및 세부 세션 배정·관리 인터페이스</div>
+                </div>
+
+                <ol style={{ paddingLeft: '20px' }}>
+                  <li style={{ marginBottom: '8px' }}><strong>프로젝트 등록:</strong> <code>프로젝트 모니터링</code> 메뉴에서 <code>+ 새 프로젝트 등록</code> 버튼을 누르고 프로젝트 번호, 조사명, 분야를 기입하여 프로젝트를 만듭니다.</li>
+                  <li style={{ marginBottom: '8px' }}><strong>스크립터 배정:</strong> 생성된 프로젝트 아래의 세부 작업(좌담회/인터뷰)에서 <code>배정하기</code>를 클릭합니다. 추천 스크립터 목록에서 각 작업자의 현재 배정 건수(업무량)와 전문 분야를 확인하고 가장 적합한 작업자에게 배정합니다.</li>
+                  <li style={{ marginBottom: '8px' }}><strong>모니터링 및 마감:</strong> 작업자가 녹취록 작성을 완료하면 진행률이 100%로 변경됩니다. 모든 세부 작업이 완료되면 <code>완료 처리</code> 버튼을 눌러 프로젝트를 종결합니다.</li>
+                  <li style={{ marginBottom: '8px' }}><strong>월간 및 프로젝트별 정산 내역 확인:</strong> <code>전체 정산 마스터</code> 메뉴에서 월별 또는 특정 기간별로 지급해야 할 스크립터별 정산 금액과 산출 기준을 투명하게 조회하고 승인합니다. 특히 <strong>프로젝트별 세부 작업 수와 정산 세부 내역</strong>을 함께 확인하고 검토할 수 있습니다.</li>
+                </ol>
+
+                <h5 style={{ fontSize: '1.05rem', margin: '30px 0 10px 0', color: 'var(--primary)', fontWeight: '600' }}>② 스크립터 (작업자) 사용 방법</h5>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: '10px' }}>스크립터는 나에게 배정된 녹취 작업을 확인하고, 작업 시간 및 실적을 제출하여 정산을 요청합니다.</p>
+
+                <div style={{ textAlign: 'center', margin: '20px 0', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', background: '#f9fafb' }}>
+                  <img src={guideWorker} alt="스크립터 워크스페이스 화면" style={{ maxWidth: '100%', height: 'auto', borderRadius: '6px', border: '1px solid var(--border-color)' }} />
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '8px' }}>[그림 2] 스크립터 대시보드 화면 및 참여 프로젝트 세션 진행 상태 조회</div>
+                </div>
+
+                <ol style={{ paddingLeft: '20px' }}>
+                  <li style={{ marginBottom: '8px' }}><strong>배정된 작업 확인:</strong> 로그인 후 <code>내 프로젝트</code> 메뉴로 이동하면 나에게 배정된 진행 중인 녹취 작업 리스트가 표시됩니다.</li>
+                  <li style={{ marginBottom: '8px' }}><strong>작업 실적(시간) 등록:</strong> 작업을 완료한 뒤 <code>작업 완료/실적 입력</code> 버튼을 클릭합니다. 실제 작업에 소요된 시간을 분(Minute) 단위로 입력하고 완료본 문서(또는 텍스트)를 등록합니다.</li>
+                  <li style={{ marginBottom: '8px' }}><strong>정산 금액 자동 산출:</strong> 입력한 시간은 시스템 정산 기준(15분 단위 올림/버림 룰)에 의해 <strong>'정산 시간'</strong>과 <strong>'산출 비용'</strong>으로 즉시 자동 환산되어 표에 나타납니다.</li>
+                  <li style={{ marginBottom: '8px' }}><strong>월간 정산 현황 조회:</strong> <code>정산 및 실적</code> 메뉴에서 내가 이번 달에 누적으로 지급받을 총 정산 액수와 작업 히스토리를 확인하고 관리할 수 있습니다.</li>
+                </ol>
+              </section>
+
+              <section style={{ marginBottom: '15px' }}>
+                <h4 style={{ fontSize: '1.15rem', borderBottom: '2.5px solid var(--primary)', paddingBottom: '8px', marginBottom: '15px', color: '#111827', fontWeight: '700' }}>3. 알아두면 유용한 시스템 핵심 기능</h4>
+                
+                <div style={{ padding: '15px 20px', backgroundColor: 'var(--info-bg)', borderLeft: '4px solid var(--info-border)', borderRadius: '4px', marginBottom: '25px', color: 'var(--info-text)' }}>
+                  <h5 style={{ fontSize: '1rem', margin: '0 0 10px 0', fontWeight: 'bold' }}>⏱️ 공정한 '15분 정산 계산법' (Rounding Rule)</h5>
+                  <p style={{ margin: 0 }}>작업 정산 시 발생하는 자잘한 분 단위 처리를 합리적으로 정돈하기 위해 시스템 내부적으로 <strong>15분 정산법</strong>이 작동합니다.</p>
+                  <ul style={{ margin: '10px 0 0 0', paddingLeft: '20px' }}>
+                    <li style={{ marginBottom: '4px' }}><strong>15분 미만 버림 (절하):</strong> 예를 들어 72분을 작업한 경우, 15분 단위로 내림되어 <strong>60분</strong>에 해당하는 비용(₩60,000)이 정산됩니다.</li>
+                    <li style={{ marginBottom: '4px' }}><strong>15분 이상 올림 (절상):</strong> 78분을 작업한 경우, 15분 단위를 초과하는 시점이므로 <strong>90분</strong>에 해당하는 비용(₩70,000)으로 올림 정산됩니다.</li>
+                  </ul>
+                </div>
+
+                <h5 style={{ fontSize: '1.05rem', margin: '20px 0 10px 0', fontWeight: '600' }}>📊 다용도 통계 그래프 (어드민 전용)</h5>
+                <p>종합 대시보드에서는 연도별/월별 프로젝트 건수와 총 정산 비용의 추이를 다양한 레이아웃으로 감상하며 업무 추이를 검토할 수 있습니다.</p>
+
+                <div style={{ textAlign: 'center', margin: '20px 0', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '10px', background: '#f9fafb' }}>
+                  <img src={guideAdmin} alt="어드민 메인 대시보드 및 통계 그래프" style={{ maxWidth: '100%', height: 'auto', borderRadius: '6px', border: '1px solid var(--border-color)' }} />
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '8px' }}>[그림 3] 어드민 관리자 메인 통계 대시보드 및 다목적 반응형 SVG 차트 화면</div>
+                </div>
+
+                <ul style={{ paddingLeft: '20px' }}>
+                  <li style={{ marginBottom: '8px' }}>막대형 / 꺾은선형 / 혼합형 토글 버튼을 통해 원하는 시각화 스타일로 데이터 비교가 가능합니다.</li>
+                  <li style={{ marginBottom: '8px' }}>마우스를 그래프 위에 올리면 수직 가이드선과 상세 툴팁이 생성되어 편리하게 월별 상세 수치를 읽을 수 있습니다.</li>
+                </ul>
+
+                <div style={{ padding: '15px 20px', backgroundColor: 'var(--tip-bg)', borderLeft: '4px solid var(--tip-border)', borderRadius: '4px', marginTop: '25px', color: 'var(--tip-text)' }}>
+                  <h5 style={{ fontSize: '1rem', margin: '0 0 10px 0', fontWeight: 'bold' }}>💬 익명 피드백 전송 기능</h5>
+                  <p style={{ margin: 0 }}>시스템 이용 중 불편한 점이나 건의하고 싶은 아이디어가 있다면 좌측 하단의 <code>사용자 피드백 보내기</code> 버튼을 눌러 언제든 의견을 남기실 수 있습니다.</p>
+                  <p style={{ margin: '10px 0 0 0' }}>전송된 의견은 작성자의 실명이 완전히 가려진 채 <strong>'익명(직군)'</strong> 배지로만 관리자에게 수집되므로, 부담 없이 자유로운 의견 개진이 가능합니다.</p>
+                </div>
+              </section>
+            </div>
+            
+            <div className="modal-footer" style={{ padding: '15px 20px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end' }}>
+              <button className="btn btn-primary" onClick={() => setShowUserGuideModal(false)}>닫기</button>
+            </div>
           </div>
         </div>
       )}
